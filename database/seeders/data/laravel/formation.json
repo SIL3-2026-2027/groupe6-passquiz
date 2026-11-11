@@ -1,0 +1,3706 @@
+{
+  "modules": [
+    {
+      "pdf": null,
+      "courses": [
+        {
+          "title": "Découvrir Laravel",
+          "description": "Un framework PHP qui fournit les briques d'une application web prêtes à l'emploi.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Présentation et avantages\n\n**Laravel** est un framework PHP **open source**, créé par **Taylor Otwell en 2011**.\n\n- **Avantages** : syntaxe claire, sécurité intégrée, communauté active, documentation de qualité\n- **Outils inclus** : routes, base de données, authentification, validation, e-mails, tâches planifiées\n- **Utilité** : sites web, applications métier, API pour mobile, boutiques en ligne\n\n> **Pourquoi un framework ?** — Sans framework, on réécrit à chaque projet le routage, la connexion à la base, la sécurité des formulaires… Laravel fournit tout cela, testé et documenté, pour se concentrer sur le métier.\n\n### L'architecture MVC\n\n- **Model** : gère les données et les règles liées à la base\n- **View** : affiche les informations sous forme de pages\n- **Controller** : reçoit la demande, appelle le Model et choisit la vue\n- La **route** décide quel controller répond à quelle URL\n\n```text\nNavigateur\n   │  GET /posts\n   ▼\nRoute        routes/web.php\n   │\n   ▼\nController   ← reçoit la demande\n   │      ↘\n   │       Model   ← lit / écrit en base\n   ▼\nVue (Blade)  ← page HTML renvoyée\n```\n\n> **Pourquoi séparer ?** — Chaque partie a un seul rôle : on peut changer l'affichage sans toucher aux données, et inversement."
+        },
+        {
+          "title": "Installer et créer un projet",
+          "description": "PHP, Composer, MySQL, Node.js… puis une seule commande.",
+          "duration_minutes": 15,
+          "position": 2,
+          "content": "### Les prérequis\n\nChaque outil doit répondre à sa commande de version.\n\n1. **PHP 8.2 ou plus** : Sous Windows : fourni par XAMPP (ajouter `C:\\xampp\\php` au PATH)\n2. **Composer** : Le gestionnaire de paquets PHP (installateur sur getcomposer.org)\n3. **MySQL** : Fourni par XAMPP : démarrer MySQL dans le panneau de contrôle\n4. **Node.js + éditeur** : Node pour compiler le CSS/JS (Vite), VS Code pour coder\n\n```bash\nphp -v\ncomposer -V\nnode -v\n```\n\n### Créer et lancer le projet\n\n1. **Créer** : Composer télécharge Laravel dans un nouveau dossier\n2. **Entrer** : dans le dossier du projet\n3. **Lancer** : le serveur local de développement\n4. **Ouvrir** : http://127.0.0.1:8000 dans le navigateur\n\n```bash\ncomposer create-project laravel/laravel mon-projet\ncd mon-projet\nphp artisan serve\n# Ouvrir http://127.0.0.1:8000\n```\n\n> **Pourquoi php artisan serve ?** — Il démarre un petit serveur web pointé sur le dossier `public/`. Pas besoin de placer le projet dans `htdocs`.\n\n### Le fichier .env : la configuration locale\n\n- Réglages **propres à chaque machine** : base de données, mode debug, clés\n- XAMPP : utilisateur `root`, mot de passe vide par défaut\n- Créer la base `passquiz` dans phpMyAdmin avant de migrer\n- Lu dans le code avec `env()` / `config()`\n\n```ini\nAPP_NAME=PassQuiz\nAPP_ENV=local\nAPP_DEBUG=true\nAPP_URL=http://127.0.0.1:8000\n\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=passquiz\nDB_USERNAME=root\nDB_PASSWORD=\n```\n\n> **Jamais sur GitHub** — `.env` contient des secrets : il est dans `.gitignore`. On partage `.env.example` à la place."
+        },
+        {
+          "title": "Structure et commandes Artisan",
+          "description": "Savoir où se trouve chaque chose.",
+          "duration_minutes": 20,
+          "position": 3,
+          "content": "### Structure d'un projet Laravel\n\n- `app` : Models, Controllers et logique\n- `routes` : les adresses de l'application\n- `resources` : les vues Blade\n- `database` : migrations et seeders\n- `public` : le **seul** dossier visible du web\n- `storage` : logs, cache et fichiers envoyés\n- `.env` : les réglages de la machine\n\n```text\nmon-projet/\n├── app/\n│   ├── Http/Controllers/\n│   └── Models/\n├── routes/web.php\n├── resources/views/\n├── database/migrations/\n├── public/\n├── storage/\n└── .env\n```\n\n### Les commandes Artisan\n\n- **Artisan** : l'outil en ligne de commande de Laravel\n- **make:** génère des fichiers prêts à remplir\n- **migrate** crée ou met à jour les tables\n- **route:list** et **tinker** pour vérifier et tester\n\n```bash\n# Créer un model avec sa migration\nphp artisan make:model Post -m\n\n# Créer un controller\nphp artisan make:controller PostController\n\n# Exécuter les migrations\nphp artisan migrate\n\n# Lister les routes\nphp artisan route:list\n\n# Console pour tester du code\nphp artisan tinker\n```\n\n> **Astuce** — `php artisan list` affiche toutes les commandes ; `php artisan help make:model` détaille les options.\n\n### Application PassQuiz — créer le projet API\n\nLe backend de PassQuiz est une API Laravel consommée par React (section 12 du cahier).\n\n- Projet `passquiz-api`, base MySQL `passquiz`\n- **install:api** ajoute `routes/api.php` et **Sanctum** (authentification par jeton, ENF-01)\n- Premiers models : Formation, Module, Cours (avec migrations)\n- Vérifier avec `route:list`\n\n```bash\ncomposer create-project laravel/laravel passquiz-api\ncd passquiz-api\n\n# .env : DB_DATABASE=passquiz\nphp artisan install:api\n\nphp artisan make:model Formation -m\nphp artisan make:model Module -m\nphp artisan make:model Cours -m\n\nphp artisan migrate\nphp artisan route:list\nphp artisan serve\n```\n\n> **Pourquoi install:api ?** — Depuis Laravel 11, le fichier `routes/api.php` n'existe plus par défaut : cette commande le crée et installe Sanctum.\n\n### À retenir\n\n- Laravel : framework PHP open source (2011)\n- **MVC** : Model = données, View = affichage, Controller = logique\n- `composer create-project` puis `php artisan serve`\n- `.env` = réglages locaux, jamais partagés\n- **Artisan** génère et pilote le projet\n\n### Pièges à éviter\n\n- Oublier de créer la base avant `php artisan migrate`\n- Versionner le fichier `.env`\n- Placer des fichiers publics ailleurs que dans `public/`\n- PHP de XAMPP trop ancien (< 8.2)\n- Lancer `php artisan …` hors du dossier du projet\n\n*Module suivant → les routes*"
+        }
+      ],
+      "number": 1,
+      "title": "Introduction à Laravel",
+      "description": "Découvrir le framework, comprendre MVC, installer et créer son premier projet.",
+      "quiz": {
+        "title": "Module 1 : Introduction à Laravel",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Qu'est-ce que Laravel ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Un langage de programmation",
+                "is_correct": false
+              },
+              {
+                "text": "Un système de gestion de base de données",
+                "is_correct": false
+              },
+              {
+                "text": "Une bibliothèque JavaScript",
+                "is_correct": false
+              },
+              {
+                "text": "Un framework PHP open source",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Laravel est écrit en PHP. Il fournit les outils d'une application web : routes, base de données, sécurité…"
+          },
+          {
+            "text": "Dans l'architecture MVC, quel est le rôle du Controller ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Afficher la page HTML",
+                "is_correct": false
+              },
+              {
+                "text": "Recevoir la demande, appeler le Model et choisir la vue",
+                "is_correct": true
+              },
+              {
+                "text": "Définir les URL",
+                "is_correct": false
+              },
+              {
+                "text": "Stocker les données en base",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le Model gère les données, la Vue les affiche. Le Controller fait le lien entre les deux."
+          },
+          {
+            "text": "Quels outils sont des prérequis pour un projet Laravel ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "MySQL (ou une autre base de données)",
+                "is_correct": true
+              },
+              {
+                "text": "Python",
+                "is_correct": false
+              },
+              {
+                "text": "PHP 8.2 ou plus",
+                "is_correct": true
+              },
+              {
+                "text": "Composer",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Python n'est pas nécessaire. Node.js est utile pour compiler les assets avec Vite."
+          },
+          {
+            "text": "Quelle commande crée un nouveau projet Laravel ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`php artisan new mon-projet`",
+                "is_correct": false
+              },
+              {
+                "text": "`npm create laravel mon-projet`",
+                "is_correct": false
+              },
+              {
+                "text": "`composer install laravel`",
+                "is_correct": false
+              },
+              {
+                "text": "`composer create-project laravel/laravel mon-projet`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Composer télécharge le squelette Laravel et ses dépendances dans le dossier `mon-projet`."
+          },
+          {
+            "text": "Quel est le seul dossier accessible directement depuis le web ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`public/`",
+                "is_correct": true
+              },
+              {
+                "text": "`app/`",
+                "is_correct": false
+              },
+              {
+                "text": "`storage/`",
+                "is_correct": false
+              },
+              {
+                "text": "`resources/`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le serveur pointe sur `public/` (qui contient `index.php`). Le reste du code n'est pas exposé : c'est une protection."
+          },
+          {
+            "text": "Le fichier `.env` doit être envoyé sur GitHub pour que l'équipe ait les mêmes réglages.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. `.env` contient des secrets (mots de passe, clés) et des réglages propres à chaque machine. On partage `.env.example`."
+          },
+          {
+            "text": "Où se trouvent les vues Blade ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`routes/views`",
+                "is_correct": false
+              },
+              {
+                "text": "`app/Views`",
+                "is_correct": false
+              },
+              {
+                "text": "`resources/views`",
+                "is_correct": true
+              },
+              {
+                "text": "`public/views`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les vues sont dans `resources/views`, avec l'extension `.blade.php`."
+          },
+          {
+            "text": "Que fait `php artisan make:model Post -m` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Crée le model Post et sa migration",
+                "is_correct": true
+              },
+              {
+                "text": "Crée seulement le model Post",
+                "is_correct": false
+              },
+              {
+                "text": "Exécute les migrations",
+                "is_correct": false
+              },
+              {
+                "text": "Crée un controller Post",
+                "is_correct": false
+              }
+            ],
+            "explanation": "L'option `-m` génère aussi le fichier de migration qui créera la table `posts`."
+          },
+          {
+            "text": "Quelles commandes Artisan sont correctement associées à leur rôle ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`serve` : déploie l'application en production",
+                "is_correct": false
+              },
+              {
+                "text": "`route:list` : liste les routes",
+                "is_correct": true
+              },
+              {
+                "text": "`tinker` : console pour tester du code",
+                "is_correct": true
+              },
+              {
+                "text": "`migrate` : met à jour les tables de la base",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`serve` lance un serveur de **développement** local, pas un déploiement en production."
+          },
+          {
+            "text": "Depuis Laravel 11, il faut lancer `php artisan install:api` pour obtenir `routes/api.php` et Sanctum.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. Le fichier n'est plus créé par défaut. C'est indispensable pour l'API de PassQuiz."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Laravel_Module_02_Routes_Cours.pdf",
+      "courses": [
+        {
+          "title": "Créer des routes",
+          "description": "Une route = une adresse + une action.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Présentation et création d'une route\n\n- Une **route** associe une **URL** à une **action**\n- On écrit : le type de requête, l'adresse, puis l'action\n- L'action peut être une **fonction** (closure) ou une méthode de **controller**\n- `routes/web.php` : pages du site · `routes/api.php` : API (JSON)\n\n```php\n// routes/web.php\nRoute::get('/bonjour', function () {\n    return 'Bonjour Laravel';\n});\n```\n\n> **Trajet** — Navigateur → `GET /bonjour` → Laravel cherche une route correspondante → exécute l'action → renvoie la réponse.\n\n### Les types de requêtes HTTP\n\n- **GET** lit · **POST** envoie · **PUT/PATCH** modifie · **DELETE** supprime\n- Même URL + verbe différent = **route différente**\n- `Route::view` : une page sans logique, sans controller\n\n```php\nRoute::get('/posts', ...);       // lire\nRoute::post('/posts', ...);      // créer\nRoute::put('/posts/1', ...);     // modifier\nRoute::delete('/posts/1', ...);  // supprimer\n\n// Afficher directement une vue\nRoute::view('/contact', 'contact');\n```\n\n> **Formulaires HTML** — Un `<form>` ne sait envoyer que GET et POST. Pour PUT ou DELETE, on ajoute `@method('PUT')` dans le formulaire (module 4)."
+        },
+        {
+          "title": "Paramètres et routes nommées",
+          "description": "Des URL variables, et des liens qui ne cassent pas.",
+          "duration_minutes": 15,
+          "position": 2,
+          "content": "### Paramètres, contraintes et paramètre optionnel\n\n- `{id}` : la valeur de l'URL est **transmise** à l'action\n- `{nom?}` : paramètre **facultatif** → valeur par défaut obligatoire\n- `where('id', '[0-9]+')` : exige un **nombre** ; sinon erreur 404\n- Raccourci : `->whereNumber('id')`\n\n```php\n// Paramètre obligatoire + contrainte + nom\nRoute::get('/posts/{id}', function ($id) {\n    return \"Article numéro $id\";\n})->where('id', '[0-9]+')\n  ->name('posts.show');\n\n// Paramètre optionnel : ? + valeur par défaut\nRoute::get('/salut/{nom?}', fn ($nom = 'invité') =>\n    \"Salut $nom\");\n```\n\n### Les routes nommées\n\n- `->name('posts.show')` donne un **nom** à la route\n- `route('nom', paramètres)` **génère l'URL**\n- Si l'adresse change dans `web.php`, tous les liens suivent automatiquement\n\n```blade\n{{-- Dans une vue Blade --}}\n<a href=\"{{ route('posts.show', 5) }}\">Voir</a>\n\n{{-- Résultat : /posts/5 --}}\n\n<?php\n// Dans un controller : redirection\nreturn redirect()->route('posts.show', $post);\n```\n\n> **Convention** — Nommer `ressource.action` : `posts.index`, `posts.show`, `posts.store`…"
+        },
+        {
+          "title": "Controllers, groupes et resource",
+          "description": "Garder le fichier des routes court et lisible.",
+          "duration_minutes": 30,
+          "position": 3,
+          "content": "### Une route vers un controller\n\n- La route désigne une **méthode** d'un controller : `[Classe::class, 'méthode']`\n- Ne pas oublier le `use` en haut du fichier\n- La logique quitte `web.php` pour aller dans le controller (module 3)\n\n```php\nuse App\\Http\\Controllers\\PostController;\n\nRoute::get('/posts',\n    [PostController::class, 'index']);\n\nRoute::get('/posts/{id}',\n    [PostController::class, 'show']);\n```\n\n### Les groupes de routes\n\n- **prefix** : début d'URL commun\n- **name** : début de nom commun\n- **middleware** : filtre appliqué à toutes les routes (ex. `auth` : connecté obligatoire)\n- On évite de répéter la même chose sur chaque ligne\n\n```php\nRoute::prefix('admin')\n    ->name('admin.')\n    ->middleware('auth')\n    ->group(function () {\n        Route::get('/tableau', ...)->name('tableau');\n        Route::get('/users', ...)->name('users');\n    });\n\n// URL : /admin/tableau  · nom : admin.tableau\n```\n\n### Routes Resource : un CRUD en une ligne\n\n**Une seule ligne**\n\n```php\nRoute::resource('posts',\n    PostController::class);\n\n// Vérifier :\n// php artisan route:list\n```\n\n- Crée les **7 routes** d'un CRUD\n- Chaque route appelle une méthode du controller\n\n**Les 7 routes créées**\n\n```text\nGET     /posts            index\nGET     /posts/create     create\nPOST    /posts            store\nGET     /posts/{id}       show\nGET     /posts/{id}/edit  edit\nPUT     /posts/{id}       update\nDELETE  /posts/{id}       destroy\n```\n\n### resource ou apiResource ?\n\n- `Route::resource` : **7 routes**, dont `create` et `edit` qui affichent des **formulaires HTML**\n- `Route::apiResource` : **5 routes**, sans `create` ni `edit`\n- Une API ne renvoie pas de formulaires : c'est le front (React) qui les affiche\n- `->only([...])` ou `->except([...])` pour n'en garder qu'une partie\n\n> **Pour PassQuiz** — Le backend est une API consommée par React : on utilise `apiResource` dans `routes/api.php`.\n\n### Application PassQuiz — les routes de l'API\n\nSection 12 du cahier des charges, traduite en routes Laravel.\n\n- Préfixe `/api` ajouté automatiquement par `api.php`\n- Routes publiques : inscription, connexion, catalogue, vérification (EF-20)\n- Groupe `auth:sanctum` : il faut un jeton valide\n- Groupe admin : préfixe + nom + middleware `role` (à créer, ENF-02)\n\n```php\n// routes/api.php\nRoute::post('/register', [AuthController::class, 'register']);\nRoute::post('/login', [AuthController::class, 'login']);\nRoute::get('/formations', [FormationController::class, 'index']);\nRoute::get('/formations/{formation}', [FormationController::class, 'show']);\nRoute::get('/verification/{numero}', [CertificatController::class, 'verifier'])\n    ->name('verification');\n\nRoute::middleware('auth:sanctum')->group(function () {\n    Route::post('/logout', [AuthController::class, 'logout']);\n    Route::post('/formations/{formation}/inscription',\n        [InscriptionController::class, 'store']);\n    Route::post('/cours/{cours}/terminer',\n        [ProgressionController::class, 'terminer']);\n    Route::post('/quiz/{quiz}/demarrer',\n        [TentativeController::class, 'demarrer']);\n    Route::post('/tentatives/{tentative}/soumettre',\n        [TentativeController::class, 'soumettre']);\n\n    Route::prefix('admin')->name('admin.')\n        ->middleware('role:admin,formateur')->group(function () {\n            Route::apiResource('formations', Admin\\FormationController::class);\n        });\n});\n```\n\n### À retenir\n\n- Une route = **verbe HTTP + adresse + action**\n- `{id}` paramètre, `{id?}` optionnel, `where` contrainte\n- `->name()` + `route()` : des liens qui ne cassent pas\n- Groupes : `prefix`, `name`, `middleware`\n- `Route::resource` = 7 routes ; `apiResource` = 5\n\n### Pièges à éviter\n\n- Oublier le `use` du controller dans le fichier de routes\n- Paramètre optionnel `{nom?}` sans valeur par défaut\n- Écrire les URL en dur au lieu d'utiliser `route()`\n- Un formulaire en `method=\"PUT\"` (impossible en HTML)\n- `Route::resource` pour une API : routes `create` / `edit` inutiles\n\n*Module suivant → les controllers*"
+        }
+      ],
+      "number": 2,
+      "title": "Les routes",
+      "description": "Associer chaque adresse de l'application à une action.",
+      "quiz": {
+        "title": "Module 2 : Les routes",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Qu'est-ce qu'une route dans Laravel ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "L'association d'une adresse (URL) à une action à exécuter",
+                "is_correct": true
+              },
+              {
+                "text": "Une commande Artisan",
+                "is_correct": false
+              },
+              {
+                "text": "Une table de la base de données",
+                "is_correct": false
+              },
+              {
+                "text": "Un fichier de vue",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Quand une requête arrive, Laravel cherche la route qui correspond au verbe et à l'URL, puis exécute son action."
+          },
+          {
+            "text": "Quelles associations verbe HTTP / rôle sont correctes ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "GET : lire",
+                "is_correct": true
+              },
+              {
+                "text": "POST : envoyer / créer",
+                "is_correct": true
+              },
+              {
+                "text": "PUT : modifier",
+                "is_correct": true
+              },
+              {
+                "text": "DELETE : modifier",
+                "is_correct": false
+              }
+            ],
+            "explanation": "DELETE sert à supprimer. PUT (ou PATCH) sert à modifier."
+          },
+          {
+            "text": "Que renvoie `/posts/abc` avec cette route ?\n\n```php\nRoute::get('/posts/{id}', fn ($id) => \"Post $id\")\n    ->where('id', '[0-9]+');\n```",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "« Post 0 »",
+                "is_correct": false
+              },
+              {
+                "text": "Une erreur 404",
+                "is_correct": true
+              },
+              {
+                "text": "« Post abc »",
+                "is_correct": false
+              },
+              {
+                "text": "« Post »",
+                "is_correct": false
+              }
+            ],
+            "explanation": "La contrainte exige des chiffres. « abc » ne correspond pas, donc aucune route n'est trouvée."
+          },
+          {
+            "text": "Comment rendre un paramètre de route optionnel ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`{?nom}`",
+                "is_correct": false
+              },
+              {
+                "text": "`{nom*}`",
+                "is_correct": false
+              },
+              {
+                "text": "`{nom?}` avec une valeur par défaut dans la fonction",
+                "is_correct": true
+              },
+              {
+                "text": "`optional('nom')`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le `?` rend le segment facultatif. La variable PHP doit alors avoir une valeur par défaut, par exemple `$nom = 'invité'`."
+          },
+          {
+            "text": "Quel est l'intérêt principal d'une route nommée ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Protéger la route",
+                "is_correct": false
+              },
+              {
+                "text": "Accélérer la route",
+                "is_correct": false
+              },
+              {
+                "text": "Créer automatiquement le controller",
+                "is_correct": false
+              },
+              {
+                "text": "Générer les URL avec `route('nom')` : les liens suivent si l'adresse change",
+                "is_correct": true
+              }
+            ],
+            "explanation": "On change l'adresse à un seul endroit (`web.php`). Tous les liens générés avec `route()` se mettent à jour."
+          },
+          {
+            "text": "Quelle syntaxe relie une route à la méthode `index` de PostController ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`Route::get('/posts', [PostController::class, 'index'])`",
+                "is_correct": true
+              },
+              {
+                "text": "`Route::get('/posts', 'PostController')`",
+                "is_correct": false
+              },
+              {
+                "text": "`Route::get('/posts', PostController->index())`",
+                "is_correct": false
+              },
+              {
+                "text": "`Route::controller('/posts', 'index')`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Un tableau `[Classe::class, 'méthode']`, avec le `use App\\Http\\Controllers\\PostController;` en haut du fichier."
+          },
+          {
+            "text": "Dans un groupe de routes, que peut-on mettre en commun ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Un début de nom (`name`)",
+                "is_correct": true
+              },
+              {
+                "text": "Un middleware (`middleware`)",
+                "is_correct": true
+              },
+              {
+                "text": "Un préfixe d'URL (`prefix`)",
+                "is_correct": true
+              },
+              {
+                "text": "La base de données utilisée",
+                "is_correct": false
+              }
+            ],
+            "explanation": "La base de données se configure dans `.env` et `config/database.php`, pas dans les routes."
+          },
+          {
+            "text": "Combien de routes crée `Route::resource('posts', PostController::class)` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "4",
+                "is_correct": false
+              },
+              {
+                "text": "10",
+                "is_correct": false
+              },
+              {
+                "text": "5",
+                "is_correct": false
+              },
+              {
+                "text": "7",
+                "is_correct": true
+              }
+            ],
+            "explanation": "index, create, store, show, edit, update et destroy."
+          },
+          {
+            "text": "Quelle route du resource gère `POST /posts` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`store`",
+                "is_correct": true
+              },
+              {
+                "text": "`update`",
+                "is_correct": false
+              },
+              {
+                "text": "`create`",
+                "is_correct": false
+              },
+              {
+                "text": "`index`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`create` affiche le formulaire (GET). `store` enregistre les données envoyées (POST)."
+          },
+          {
+            "text": "Pour l'API de PassQuiz, `Route::apiResource` convient mieux que `Route::resource`, car les routes `create` et `edit` sont inutiles.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. Ces deux routes affichent des formulaires HTML, alors que les formulaires de PassQuiz sont affichés par React."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": null,
+      "courses": [
+        {
+          "title": "Créer un controller",
+          "description": "Sortir la logique du fichier des routes.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Présentation et création\n\n- **Rôle** : reçoit la demande, appelle les Models, renvoie la réponse\n- **Organisation** : un controller **par ressource** (articles, utilisateurs…)\n- **Création** : `php artisan make:controller PostController`\n- Fichier généré dans `app/Http/Controllers/`\n\n```php\n<?php\n\nnamespace App\\Http\\Controllers;\n\nclass PostController extends Controller\n{\n    // les méthodes viennent ici\n}\n```\n\n> **Pourquoi pas tout dans web.php ?** — Des dizaines de fonctions dans le fichier de routes deviennent illisibles. Le controller regroupe la logique d'une ressource dans une classe."
+        },
+        {
+          "title": "Méthodes et données vers la vue",
+          "description": "Une action de l'application = une méthode.",
+          "duration_minutes": 15,
+          "position": 2,
+          "content": "### Du controller à la vue\n\n**PostController.php**\n\n```php\npublic function index()\n{\n    $posts = Post::all();\n\n    return view('posts.index', [\n        'posts' => $posts,\n    ]);\n}\n```\n\n- Le controller **lit** les données avec le Model\n- Puis il les **envoie** à la vue\n\n**posts/index.blade.php**\n\n```blade\n@foreach ($posts as $post)\n  <p>{{ $post->title }}</p>\n@endforeach\n```\n\n- La clé `'posts'` devient la variable `$posts`\n- La vue affiche chaque variable reçue\n\n### Trois façons de passer des données\n\n- Les trois donnent **le même résultat** dans la vue\n- `compact('posts')` crée `['posts' => $posts]`\n- `index` pour la liste, `show` pour le détail : un nom de méthode par action\n\n```php\n// 1. Tableau associatif\nreturn view('posts.index', ['posts' => $posts]);\n\n// 2. compact() : même nom de variable\nreturn view('posts.index', compact('posts'));\n\n// 3. with()\nreturn view('posts.index')->with('posts', $posts);\n```"
+        },
+        {
+          "title": "Paramètres et Request",
+          "description": "Récupérer ce qui arrive avec la requête.",
+          "duration_minutes": 15,
+          "position": 3,
+          "content": "### Valeur d'adresse ou modèle automatique\n\n**Valeur d'adresse**\n\n```php\n// Route::get('/posts/{id}', ...)\npublic function show($id)\n{\n    $post = Post::findOrFail($id);\n    return view('posts.show',\n        compact('article'));\n}\n```\n\n- La valeur de l'URL arrive en **argument**\n- `findOrFail` : **404** automatique si l'id n'existe pas\n\n**Modèle automatique (Route Model Binding)**\n\n```php\n// Route::get('/posts/{post}', ...)\npublic function show(Post $post)\n{\n    // l'article est déjà chargé\n    return view('posts.show',\n        compact('article'));\n}\n```\n\n- Laravel retrouve **lui-même** l'article\n- Le nom du paramètre `{post}` doit correspondre à `$post`\n\n### Les données d'un formulaire : Request\n\n- L'objet **Request** contient tout ce qui a été envoyé\n- `$request->input('title')` lit un champ\n- `validate()` vérifie les règles ; en cas d'échec, retour au formulaire avec les erreurs\n- `Post::create()` exige la liste `$fillable` dans le Model\n- Après un enregistrement : **redirection**\n\n```php\nuse Illuminate\\Http\\Request;\n\npublic function store(Request $request)\n{\n    $titre = $request->input('title');\n\n    // Valider avant d'enregistrer\n    $data = $request->validate([\n        'title'   => 'required|max:255',\n        'content' => 'required',\n    ]);\n\n    $post = Post::create($data);\n\n    return redirect()->route('posts.show', $post);\n}\n```\n\n> **Toujours valider** — Ne jamais enregistrer `$request->all()` sans validation : l'utilisateur peut envoyer n'importe quel champ."
+        },
+        {
+          "title": "Resource Controller",
+          "description": "Toutes les méthodes d'un CRUD, générées d'un coup.",
+          "duration_minutes": 20,
+          "position": 4,
+          "content": "### Générer et relier un Resource Controller\n\n**Terminal + routes**\n\n```bash\nphp artisan make:controller PostController -r\n\n# routes/web.php\n# Route::resource('posts', PostController::class);\n```\n\n- `-r` (ou `--resource`) crée les 7 méthodes\n- **Une seule ligne** de route les relie\n\n**Les méthodes générées**\n\n```php\nindex()    // liste\ncreate()   // formulaire de création\nstore()    // enregistrer\nshow()     // détail\nedit()     // formulaire de modification\nupdate()   // mettre à jour\ndestroy()  // supprimer\n```\n\n### Options utiles de make:controller\n\n| Commande | Résultat |\n|---|---|\n| `make:controller PostController` | Classe vide |\n| `… -r` / `--resource` | Les 7 méthodes CRUD |\n| `… --api` | 5 méthodes, sans `create` ni `edit` (pour une API) |\n| `… -r --model=Article` | Méthodes typées avec `Post $post` (Route Model Binding) |\n\n> **Vérifier** — `php artisan route:list` montre chaque route et la méthode qui lui répond.\n\n### Application PassQuiz — le FormationController de l'API\n\nGénéré avec `php artisan make:controller FormationController --api --model=Formation`.\n\n- Une API renvoie du **JSON**, pas une vue\n- EF-05 : seules les formations **publiées** sont visibles\n- Route Model Binding : `Formation $formation`\n- Formation non publiée → **404**, comme si elle n'existait pas\n\n```php\nclass FormationController extends Controller\n{\n    // GET /api/formations\n    public function index()\n    {\n        $formations = Formation::where('statut', 'publie')\n            ->withCount('modules')\n            ->get();\n\n        return response()->json($formations);\n    }\n\n    // GET /api/formations/{formation}\n    public function show(Formation $formation)\n    {\n        abort_if($formation->statut !== 'publie', 404);\n\n        return response()->json(\n            $formation->load('modules.cours')\n        );\n    }\n}\n```\n\n### À retenir\n\n- Le controller **reçoit, traite, répond**\n- Une **méthode par action** (index, show, store…)\n- `view('dossier.vue', compact('var'))`\n- `Post $post` : Laravel charge le modèle tout seul\n- `-r` = 7 méthodes ; `--api` = 5 méthodes\n\n### Pièges à éviter\n\n- Oublier `use App\\Models\\Post;` ou `use Illuminate\\Http\\Request;`\n- `{id}` dans la route mais `Post $post` dans la méthode : le binding ne marche pas\n- `find()` sans vérifier `null` (préférer `findOrFail`)\n- Enregistrer sans `validate()`\n- Renvoyer une vue au lieu de JSON dans une API\n\n*Module suivant → les vues et Blade*"
+        }
+      ],
+      "number": 3,
+      "title": "Les controllers",
+      "description": "Recevoir la demande, travailler avec les Models, renvoyer la bonne réponse.",
+      "quiz": {
+        "title": "Module 3 : Les controllers",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Quel est le rôle d'un controller ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Recevoir la demande, appeler les Models et renvoyer la réponse",
+                "is_correct": true
+              },
+              {
+                "text": "Configurer la base de données",
+                "is_correct": false
+              },
+              {
+                "text": "Définir la structure des tables",
+                "is_correct": false
+              },
+              {
+                "text": "Afficher le HTML",
+                "is_correct": false
+              }
+            ],
+            "explanation": "C'est le « C » de MVC : il fait le lien entre la requête, les données (Model) et l'affichage (Vue)."
+          },
+          {
+            "text": "Quelle commande crée un controller ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`php artisan controller PostController`",
+                "is_correct": false
+              },
+              {
+                "text": "`composer make:controller PostController`",
+                "is_correct": false
+              },
+              {
+                "text": "`php artisan make:controller PostController`",
+                "is_correct": true
+              },
+              {
+                "text": "`php artisan new:controller PostController`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les commandes `make:` d'Artisan génèrent les fichiers. Le controller est créé dans `app/Http/Controllers/`."
+          },
+          {
+            "text": "Quelles écritures envoient `$posts` à la vue sous le nom `$posts` ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`view('posts.index', $posts)`",
+                "is_correct": false
+              },
+              {
+                "text": "`view('posts.index', ['posts' => $posts])`",
+                "is_correct": true
+              },
+              {
+                "text": "`view('posts.index', compact('posts'))`",
+                "is_correct": true
+              },
+              {
+                "text": "`view('posts.index')->with('posts', $posts)`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "La dernière passe directement la collection, sans clé : la vue ne reçoit pas de variable `$posts`."
+          },
+          {
+            "text": "Dans `view('posts.index')`, quel fichier est chargé ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`resources/views/posts.index.php`",
+                "is_correct": false
+              },
+              {
+                "text": "`app/views/posts/index.php`",
+                "is_correct": false
+              },
+              {
+                "text": "`resources/views/posts/index.blade.php`",
+                "is_correct": true
+              },
+              {
+                "text": "`public/posts/index.html`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le point remplace la barre oblique, et l'extension `.blade.php` est implicite."
+          },
+          {
+            "text": "Que fait `Post::findOrFail($id)` si l'article n'existe pas ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Renvoie le premier article",
+                "is_correct": false
+              },
+              {
+                "text": "Renvoie `null`",
+                "is_correct": false
+              },
+              {
+                "text": "Déclenche automatiquement une erreur 404",
+                "is_correct": true
+              },
+              {
+                "text": "Crée l'article",
+                "is_correct": false
+              }
+            ],
+            "explanation": "C'est plus sûr que `find()`, qui renvoie `null` et provoquerait une erreur plus loin dans le code."
+          },
+          {
+            "text": "Avec la route `/posts/{post}`, quelle signature utilise le Route Model Binding ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`show(int $post)`",
+                "is_correct": false
+              },
+              {
+                "text": "`show(Request $post)`",
+                "is_correct": false
+              },
+              {
+                "text": "`show(Post $post)`",
+                "is_correct": true
+              },
+              {
+                "text": "`show($id)`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le type `Post` et le nom `$post` (identique à `{post}`) permettent à Laravel de charger le modèle tout seul."
+          },
+          {
+            "text": "Comment lire le champ `title` envoyé par un formulaire ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`$_POST['title']` est obligatoire",
+                "is_correct": false
+              },
+              {
+                "text": "`$post->title`",
+                "is_correct": false
+              },
+              {
+                "text": "`$request->input('title')`",
+                "is_correct": true
+              },
+              {
+                "text": "`Request::title()`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "L'objet `Request`, injecté dans la méthode, donne accès à toutes les données envoyées."
+          },
+          {
+            "text": "Si `$request->validate()` échoue, Laravel renvoie automatiquement l'utilisateur au formulaire avec les erreurs.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. Pour une requête d'API (JSON), il renvoie à la place une erreur 422 avec la liste des erreurs."
+          },
+          {
+            "text": "Quelle méthode d'un Resource Controller affiche le formulaire de modification ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`show`",
+                "is_correct": false
+              },
+              {
+                "text": "`create`",
+                "is_correct": false
+              },
+              {
+                "text": "`edit`",
+                "is_correct": true
+              },
+              {
+                "text": "`update`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`edit` affiche le formulaire (GET). `update` enregistre les modifications (PUT/PATCH)."
+          },
+          {
+            "text": "Pour le FormationController de l'API PassQuiz, quelles affirmations sont vraies ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Il renvoie du JSON avec `response()->json()`",
+                "is_correct": true
+              },
+              {
+                "text": "On le génère avec l'option `--api`",
+                "is_correct": true
+              },
+              {
+                "text": "`index` renvoie toutes les formations, même en brouillon",
+                "is_correct": false
+              },
+              {
+                "text": "Il n'a pas de méthodes `create` ni `edit`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "EF-05 : seules les formations publiées sont visibles des apprenants. On filtre donc avec `where('statut', 'publie')`."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": null,
+      "courses": [
+        {
+          "title": "Blade : vues et affichage",
+          "description": "Le moteur de templates de Laravel.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Créer et appeler une vue\n\n**resources/views/posts/index.blade.php**\n\n```blade\n<h1>Mes articles</h1>\n<p>{{ strtoupper($nom) }}</p>\n```\n\n- Fichiers `.blade.php` dans `resources/views`\n- Du HTML + des instructions Blade\n\n**routes/web.php**\n\n```php\nRoute::get('/posts', function () {\n    return view('posts.index',\n        ['nom' => 'Awa']);\n});\n```\n\n- `view()` reçoit le nom **sans extension**\n- Un **point** remplace la barre oblique\n\n### Afficher des données : {{ }} ou {!! !!}\n\n- `{{ }}` affiche une variable en **neutralisant le HTML** dangereux\n- `{!! !!}` affiche le HTML **tel quel**\n- On peut appeler des fonctions PHP : `{{ strtoupper($nom) }}`\n- `{{-- --}}` : commentaire invisible dans la page\n\n```blade\n{{-- Échappé : sûr --}}\n<p>{{ $post->title }}</p>\n<p>{{ $post->created_at->format('d/m/Y') }}</p>\n\n{{-- Brut : à éviter, sauf contenu de confiance --}}\n{!! $post->content !!}\n\n{{-- Valeur par défaut --}}\n<p>{{ $user->bio ?? 'Pas de bio' }}</p>\n```\n\n> **Pourquoi c'est important : XSS** — Si un utilisateur écrit `<script>…</script>` dans un commentaire, `{{ }}` l'affiche comme du texte. `{!! !!}` l'exécuterait chez tous les visiteurs."
+        },
+        {
+          "title": "Conditions et boucles",
+          "description": "Afficher selon les données.",
+          "duration_minutes": 15,
+          "position": 2,
+          "content": "### Conditions et boucles\n\n**Condition**\n\n```blade\n@if ($note >= 10)\n    <p>Admis</p>\n@elseif ($note >= 8)\n    <p>Rattrapage</p>\n@else\n    <p>Refusé</p>\n@endif\n```\n\n- Le bloc s'affiche seulement si la condition est vraie\n- Aussi : `@unless`, `@isset`, `@empty`\n\n**Boucle avec liste vide**\n\n```blade\n@forelse ($posts as $post)\n    <li>{{ $post->title }}</li>\n@empty\n    <li>Aucun article.</li>\n@endforelse\n```\n\n- `@foreach` répète le bloc pour chaque élément\n- `@forelse` prévoit un message **quand la liste est vide**\n\n### La variable $loop\n\n- Disponible dans toute boucle `@foreach`\n- `$loop->iteration` : numéro (à partir de 1)\n- `$loop->index` : position (à partir de 0)\n- `$loop->first`, `$loop->last`, `$loop->count`\n\n```blade\n<ol>\n@foreach ($questions as $question)\n    <li class=\"{{ $loop->first ? 'premiere' : '' }}\">\n        Question {{ $loop->iteration }} / {{ $loop->count }}\n        : {{ $question->enonce }}\n    </li>\n@endforeach\n</ol>\n```"
+        },
+        {
+          "title": "Les directives utiles",
+          "description": "Utilisateur connecté, formulaires et erreurs.",
+          "duration_minutes": 15,
+          "position": 3,
+          "content": "### @auth, @csrf, @method et @error\n\n- **@auth / @guest** : bloc selon que l'utilisateur est connecté ou non\n- **@csrf** : jeton qui **protège** le formulaire ; sans lui, erreur **419**\n- **@method('PUT')** : simule PUT ou DELETE (HTML ne connaît que GET et POST)\n- **@error** : message d'erreur du champ après la validation\n- `old('title')` : remet la saisie après une erreur\n\n```blade\n{{-- Selon l'utilisateur --}}\n@auth\n    <p>Bonjour {{ Auth::user()->name }}</p>\n@else\n    <a href=\"/login\">Connexion</a>\n@endauth\n\n{{-- Dans un formulaire --}}\n<form method=\"POST\" action=\"/posts/1\">\n    @csrf\n    @method('PUT')\n    <input name=\"title\" value=\"{{ old('title') }}\">\n    @error('title')\n        <p class=\"erreur\">{{ $message }}</p>\n    @enderror\n</form>\n```\n\n> **CSRF en une phrase** — Le jeton prouve que le formulaire vient bien de votre site, et pas d'un site piégé qui enverrait la requête à votre place."
+        },
+        {
+          "title": "Layouts et composants",
+          "description": "Écrire le menu et le pied de page une seule fois.",
+          "duration_minutes": 25,
+          "position": 4,
+          "content": "### Layouts : extends, section, yield, include\n\n**layouts/app.blade.php**\n\n```blade\n<html>\n<body>\n  <nav>Menu</nav>\n  @yield('content')\n  @include('partials.footer')\n</body>\n</html>\n```\n\n- **@yield** : emplacement d'une zone\n- **@include** : insère un fragment réutilisable\n\n**Une page**\n\n```blade\n@extends('layouts.app')\n\n@section('content')\n  <h1>Mes articles</h1>\n@endsection\n```\n\n- **@extends** : quel layout la page utilise\n- **@section** : le contenu de la zone\n\n### Les composants Blade\n\n**components/alert.blade.php**\n\n```blade\n@props(['type' => 'info'])\n\n<div class=\"alert alert-{{ $type }}\">\n    {{ $slot }}\n</div>\n```\n\n- Créé avec `php artisan make:component alert --view`\n- **@props** : paramètres + valeurs par défaut\n- **$slot** : le contenu placé entre les balises\n\n**Utilisation**\n\n```blade\n<x-alert type=\"danger\">\n    Une erreur est survenue.\n</x-alert>\n\n<x-alert>\n    Information (type = info)\n</x-alert>\n```\n\n- Balise qui commence par **x-**\n- Même idée que les props et `children` de React\n\n### Exemple complet : de la route à la vue\n\n- **1. Route** : l'adresse est reliée à une méthode du controller\n- **2. Controller** : lit les articles avec le Model et les envoie à la vue\n- **3. Vue** : hérite du layout, boucle et affiche chaque titre\n- **Résultat** : la liste, avec le menu et le pied de page du layout\n\n```text\n// routes/web.php\nRoute::get('/posts', [PostController::class, 'index']);\n\n// PostController.php (index)\n$posts = Post::all();\nreturn view('posts.index', compact('posts'));\n\n// posts/index.blade.php\n@extends('layouts.app')\n@section('content')\n  @foreach ($posts as $post)\n    <h2>{{ $post->title }}</h2>\n  @endforeach\n@endsection\n```\n\n### Application PassQuiz — le certificat en Blade\n\nEF-19 : le certificat PDF est une vue Blade convertie par barryvdh/laravel-dompdf.\n\n- Même si le site est en React, **le PDF est généré par Blade**\n- `{{ }}` : le nom de l'apprenant est échappé\n- Section 7 du cahier : nom, formation, score, date, numéro\n- Le lien de vérification utilise une **route nommée** (EF-20)\n\n```blade\n{{-- resources/views/pdf/certificat.blade.php --}}\n<div class=\"certificat\">\n  <h1>PASSQUIZ</h1>\n  <h2>CERTIFICAT DE RÉUSSITE</h2>\n  <p>Nous certifions que</p>\n  <p class=\"nom\">{{ $certificat->user->nom }}</p>\n  <p>a réussi la formation {{ $certificat->formation->titre }}\n     avec un score de {{ $certificat->score }} %</p>\n  <p>Date : {{ $certificat->emis_le->format('d/m/Y') }}</p>\n  <p>Certificat N° : {{ $certificat->numero }}</p>\n  <p>Vérification :\n     {{ route('verification', $certificat->numero) }}</p>\n</div>\n\n<?php\n// CertificatController@pdf\nreturn Pdf::loadView('pdf.certificat', compact('certificat'))\n    ->download(\"{$certificat->numero}.pdf\");\n```\n\n### À retenir\n\n- Blade = HTML + directives, fichiers `.blade.php`\n- `{{ }}` échappe, `{!! !!}` n'échappe pas\n- `@if`, `@foreach`, `@forelse`, `$loop`\n- `@auth`, `@csrf`, `@method`, `@error`\n- Layouts (`@extends` / `@yield`) et composants (`<x-…>`)\n\n### Pièges à éviter\n\n- `{!! !!}` sur une saisie utilisateur (faille XSS)\n- Oublier `@csrf` : erreur 419 à l'envoi\n- `<form method=\"PUT\">` au lieu de POST + `@method('PUT')`\n- `@extends` qui n'est pas la première ligne de la vue\n- Nom de vue avec `/` ou `.blade.php` dans `view()`\n\n*Module suivant → bases de données et migrations*"
+        }
+      ],
+      "number": 4,
+      "title": "Les vues et Blade",
+      "description": "Afficher des pages dynamiques, sûres et bien organisées.",
+      "quiz": {
+        "title": "Module 4 : Les vues et Blade",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Quelle est l'extension d'un fichier de vue Blade ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`.blade.php`",
+                "is_correct": true
+              },
+              {
+                "text": "`.blade`",
+                "is_correct": false
+              },
+              {
+                "text": "`.html`",
+                "is_correct": false
+              },
+              {
+                "text": "`.php.blade`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les vues sont dans `resources/views` et se terminent par `.blade.php`."
+          },
+          {
+            "text": "Quelle est la différence entre `{{ $x }}` et `{!! $x !!}` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Aucune",
+                "is_correct": false
+              },
+              {
+                "text": "`{!! !!}` est plus sûr",
+                "is_correct": false
+              },
+              {
+                "text": "`{{ }}` neutralise le HTML dangereux ; `{!! !!}` affiche le HTML tel quel",
+                "is_correct": true
+              },
+              {
+                "text": "`{{ }}` ne fonctionne qu'avec les nombres",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`{{ }}` protège contre les failles XSS. On réserve `{!! !!}` au contenu de confiance."
+          },
+          {
+            "text": "Quelle directive affiche un message quand la liste est vide ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`@while`",
+                "is_correct": false
+              },
+              {
+                "text": "`@forelse … @empty … @endforelse`",
+                "is_correct": true
+              },
+              {
+                "text": "`@foreach … @else`",
+                "is_correct": false
+              },
+              {
+                "text": "`@if … @endif` uniquement",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`@forelse` boucle comme `@foreach`. Le bloc `@empty` s'affiche s'il n'y a aucun élément."
+          },
+          {
+            "text": "Dans une boucle, que vaut `$loop->iteration` au premier tour ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`true`",
+                "is_correct": false
+              },
+              {
+                "text": "`null`",
+                "is_correct": false
+              },
+              {
+                "text": "0",
+                "is_correct": false
+              },
+              {
+                "text": "1",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`iteration` commence à 1. C'est `$loop->index` qui commence à 0."
+          },
+          {
+            "text": "Que se passe-t-il si on oublie `@csrf` dans un formulaire POST ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Laravel refuse la requête (erreur 419)",
+                "is_correct": true
+              },
+              {
+                "text": "Rien",
+                "is_correct": false
+              },
+              {
+                "text": "Les données sont envoyées en GET",
+                "is_correct": false
+              },
+              {
+                "text": "Le formulaire est validé automatiquement",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Sans jeton CSRF valide, Laravel considère la requête comme potentiellement forgée par un autre site."
+          },
+          {
+            "text": "Comment envoyer une requête PUT depuis un formulaire HTML ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`<form method=\"PUT\">`",
+                "is_correct": false
+              },
+              {
+                "text": "C'est impossible",
+                "is_correct": false
+              },
+              {
+                "text": "`<form method=\"GET\">` + `@put`",
+                "is_correct": false
+              },
+              {
+                "text": "`<form method=\"POST\">` + `@method('PUT')`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "HTML ne connaît que GET et POST. `@method('PUT')` ajoute un champ caché `_method` que Laravel lit."
+          },
+          {
+            "text": "Quelles directives servent aux layouts ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`@section`",
+                "is_correct": true
+              },
+              {
+                "text": "`@csrf`",
+                "is_correct": false
+              },
+              {
+                "text": "`@extends`",
+                "is_correct": true
+              },
+              {
+                "text": "`@yield`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`@csrf` protège les formulaires. Les trois autres organisent l'héritage de pages."
+          },
+          {
+            "text": "Dans un composant Blade, que contient `$slot` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Le contenu placé entre `<x-alert>` et `</x-alert>`",
+                "is_correct": true
+              },
+              {
+                "text": "Les paramètres `@props`",
+                "is_correct": false
+              },
+              {
+                "text": "La route actuelle",
+                "is_correct": false
+              },
+              {
+                "text": "Le nom du composant",
+                "is_correct": false
+              }
+            ],
+            "explanation": "C'est l'équivalent de `children` en React : le composant fournit le cadre, le parent fournit le contenu."
+          },
+          {
+            "text": "`@error('title')` affiche le message d'erreur de validation du champ `title` dans la variable `$message`.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. Il s'utilise après un `validate()` qui a échoué, souvent avec `old('title')` pour remettre la saisie."
+          },
+          {
+            "text": "PassQuiz utilise React pour l'interface, donc Blade ne lui sert à rien.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. Le certificat PDF (EF-19) est une vue Blade que dompdf convertit en PDF."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Laravel_Module_05_Migrations_Cours.pdf",
+      "courses": [
+        {
+          "title": "Configuration et connexion MySQL",
+          "description": "Laravel doit savoir à quelle base se connecter.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Configurer la connexion\n\n- Les paramètres de la base sont dans le fichier d'environnement `.env`\n- XAMPP : `root` sans mot de passe par défaut\n\n```ini\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=blog\nDB_USERNAME=root\nDB_PASSWORD=\n```\n\n### Tester\n\n- Si la connexion échoue, `migrate` affiche l'erreur\n- Base absente → message « Unknown database »\n\n```bash\n# 1. Créer la base « blog » (phpMyAdmin)\n# 2. Lancer les migrations\nphp artisan migrate\n\n# Voir l'état des migrations\nphp artisan migrate:status\n```"
+        },
+        {
+          "title": "Créer une migration",
+          "description": "La structure de la base, versionnée avec le code.",
+          "duration_minutes": 25,
+          "position": 2,
+          "content": "### Pourquoi des migrations ?\n\n- Une **migration** est un fichier PHP qui décrit la **création ou la modification d'une table**\n- Elle est **versionnée avec Git** : toute l'équipe a la même structure de base\n- Plus besoin d'échanger des exports SQL ou de cliquer dans phpMyAdmin\n- Chaque migration a une méthode `up()` (appliquer) et `down()` (annuler)\n\n> **Analogie** — Les migrations sont l'historique Git de votre base de données : on rejoue les étapes dans l'ordre pour obtenir la même structure partout.\n\n### Créer la table posts\n\n- `id()` : la clé primaire auto-incrémentée\n- Types : `string`, `text`, `integer`, `boolean`, `date`, `decimal`…\n- Options : `nullable()`, `default()`, `unique()`\n- `foreignId('user_id')->constrained()` : clé étrangère vers `users.id`\n\n```php\n// php artisan make:migration create_posts_table\nSchema::create('posts', function (Blueprint $t) {\n    $t->id();                                // clé primaire\n    $t->string('title');                     // VARCHAR(255)\n    $t->text('content')->nullable();         // peut être vide\n    $t->boolean('active')->default(true);\n    $t->foreignId('user_id')->constrained(); // clé étrangère\n    $t->timestamps();                        // created_at, updated_at\n});\n```\n\n### Types de colonnes et options courants\n\n| Méthode | Résultat |\n|---|---|\n| `$t->string('nom', 100)` | Texte court (VARCHAR) |\n| `$t->text('contenu')` | Texte long |\n| `$t->integer('ordre')` / `unsignedInteger` | Nombre entier |\n| `$t->boolean('actif')` | Vrai / faux |\n| `$t->enum('role', ['admin', 'apprenant'])` | Liste de valeurs autorisées |\n| `$t->timestamp('termine_le')->nullable()` | Date et heure, peut être vide |\n| `->constrained()->cascadeOnDelete()` | Supprime les lignes liées avec le parent |"
+        },
+        {
+          "title": "Exécuter, annuler et remplir la base",
+          "description": "Faire évoluer la base sans rien casser.",
+          "duration_minutes": 30,
+          "position": 3,
+          "content": "### Les commandes de migration\n\n- `migrate` : applique ce qui manque\n- `rollback` : revient en arrière (appelle `down()`)\n- Pour changer une table déjà migrée : une **nouvelle migration**\n- `fresh --seed` : repart de zéro (en **développement** seulement !)\n\n```bash\n# Appliquer les migrations pas encore passées\nphp artisan migrate\n\n# Annuler le dernier lot\nphp artisan migrate:rollback\n\n# Modifier une table existante : NOUVELLE migration\nphp artisan make:migration add_slug_to_posts_table\n\n# Tout supprimer, tout recréer, puis remplir\nphp artisan migrate:fresh --seed\n```\n\n> **Ne jamais modifier une migration déjà partagée** — Vos collègues ne la rejoueront pas : leur base serait différente de la vôtre. On ajoute une nouvelle migration.\n\n### Seeders et Factories : des données de test\n\n- **Factory** : le modèle de fausses données\n- **Seeder** : remplir la base\n- `fake()` génère des valeurs réalistes\n- 10 articles créés en une ligne\n\n```php\n// database/factories/PostFactory.php\npublic function definition(): array\n{\n    return [\n        'title'   => fake()->sentence(),\n        'content' => fake()->paragraph(),\n        'user_id' => User::factory(),\n    ];\n}\n\n// database/seeders/DatabaseSeeder.php\npublic function run(): void\n{\n    Post::factory()->count(10)->create();\n}\n\n// php artisan db:seed\n// ou php artisan migrate:fresh --seed\n```\n\n### Application PassQuiz — les tables des quiz\n\nSection 9 du cahier des charges, traduite en migrations.\n\n- `module_id` nullable : un quiz sans module = évaluation finale\n- `est_correcte` : jamais envoyée au client (section 11)\n- `unique(['user_id', 'cours_id'])` : un cours terminé une seule fois\n- `numero` unique : PQ-LAR-2026-00001 (règle 6.4)\n\n```php\nSchema::create('quiz', function (Blueprint $t) {\n    $t->id();\n    $t->foreignId('formation_id')->constrained()->cascadeOnDelete();\n    $t->foreignId('module_id')->nullable()->constrained();\n    $t->string('titre');\n    $t->unsignedTinyInteger('score_min')->default(60);\n    $t->unsignedSmallInteger('duree_min')->default(20);\n    $t->unsignedTinyInteger('max_tentatives')->default(3);\n    $t->unsignedSmallInteger('delai_heures')->default(24);\n    $t->timestamps();\n});\n\nSchema::create('reponses', function (Blueprint $t) {\n    $t->id();\n    $t->foreignId('question_id')->constrained()->cascadeOnDelete();\n    $t->string('texte');\n    $t->boolean('est_correcte')->default(false);\n});\n\nSchema::create('progression_cours', function (Blueprint $t) {\n    $t->id();\n    $t->foreignId('user_id')->constrained();\n    $t->foreignId('cours_id')->constrained('cours');\n    $t->timestamp('termine_le');\n    $t->unique(['user_id', 'cours_id']);\n});\n```\n\n### À retenir\n\n- `.env` : paramètres de connexion\n- Migration = structure de table versionnée (`up` / `down`)\n- `id()`, types de colonnes, `nullable()`, `foreignId()->constrained()`\n- `migrate`, `rollback`, nouvelle migration pour modifier\n- Factories + seeders = données de test\n\n### Pièges à éviter\n\n- Lancer `migrate` avant d'avoir créé la base\n- Modifier une ancienne migration déjà partagée\n- `migrate:fresh` sur une base de production\n- Clé étrangère vers une table pas encore créée (ordre des fichiers)\n- Oublier `nullable()` sur une colonne facultative\n\n*Module suivant → Models et Eloquent ORM*"
+        }
+      ],
+      "number": 5,
+      "title": "Bases de données et migrations",
+      "description": "Décrire ses tables en PHP, les créer, les modifier et les remplir.",
+      "quiz": {
+        "title": "Module 5 : Bases de données et migrations",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Où configure-t-on la connexion à la base MySQL ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`routes/web.php`",
+                "is_correct": false
+              },
+              {
+                "text": "Le fichier `.env`",
+                "is_correct": true
+              },
+              {
+                "text": "`public/index.php`",
+                "is_correct": false
+              },
+              {
+                "text": "`resources/views`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les variables `DB_*` du fichier `.env` sont propres à chaque machine."
+          },
+          {
+            "text": "Qu'est-ce qu'une migration ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Une copie de sauvegarde de la base",
+                "is_correct": false
+              },
+              {
+                "text": "Une requête SQL écrite dans une vue",
+                "is_correct": false
+              },
+              {
+                "text": "Un fichier PHP qui décrit la création ou la modification d'une table",
+                "is_correct": true
+              },
+              {
+                "text": "Un transfert de serveur",
+                "is_correct": false
+              }
+            ],
+            "explanation": "C'est la structure de la base sous forme de code, versionnée avec Git."
+          },
+          {
+            "text": "Que crée `$t->id()` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Une colonne texte",
+                "is_correct": false
+              },
+              {
+                "text": "Un index unique sur le nom",
+                "is_correct": false
+              },
+              {
+                "text": "Une clé étrangère",
+                "is_correct": false
+              },
+              {
+                "text": "La clé primaire auto-incrémentée",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Une colonne `id` (BIGINT non signé, auto-incrémenté), clé primaire de la table."
+          },
+          {
+            "text": "Que fait `$t->foreignId('user_id')->constrained()` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Rend la colonne unique",
+                "is_correct": false
+              },
+              {
+                "text": "Crée une colonne `user_id` liée à `users.id` (clé étrangère)",
+                "is_correct": true
+              },
+              {
+                "text": "Crée un utilisateur",
+                "is_correct": false
+              },
+              {
+                "text": "Supprime la table `users`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`constrained()` déduit la table `users` à partir du nom `user_id` et ajoute la contrainte."
+          },
+          {
+            "text": "Quelles colonnes ajoute `$t->timestamps()` ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`published_at`",
+                "is_correct": false
+              },
+              {
+                "text": "`created_at`",
+                "is_correct": true
+              },
+              {
+                "text": "`updated_at`",
+                "is_correct": true
+              },
+              {
+                "text": "`deleted_at`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`deleted_at` vient de `softDeletes()`. Eloquent remplit automatiquement `created_at` et `updated_at`."
+          },
+          {
+            "text": "Quelle commande annule le dernier lot de migrations ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`php artisan migrate:undo`",
+                "is_correct": false
+              },
+              {
+                "text": "`php artisan db:back`",
+                "is_correct": false
+              },
+              {
+                "text": "`php artisan migrate:rollback`",
+                "is_correct": true
+              },
+              {
+                "text": "`php artisan migrate:delete`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`rollback` exécute la méthode `down()` des migrations du dernier lot."
+          },
+          {
+            "text": "Pour ajouter une colonne à une table déjà migrée et partagée, on modifie l'ancienne migration.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. On crée une nouvelle migration (`add_slug_to_posts_table`) : les autres développeurs l'appliqueront avec `migrate`."
+          },
+          {
+            "text": "Que fait `php artisan migrate:fresh --seed` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Met à jour sans rien perdre",
+                "is_correct": false
+              },
+              {
+                "text": "Ne lance que les seeders",
+                "is_correct": false
+              },
+              {
+                "text": "Sauvegarde la base",
+                "is_correct": false
+              },
+              {
+                "text": "Supprime toutes les tables, les recrée, puis lance les seeders",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Toutes les données sont perdues : à réserver au développement."
+          },
+          {
+            "text": "Quels rôles sont corrects ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "La Factory décrit comment fabriquer de fausses données",
+                "is_correct": true
+              },
+              {
+                "text": "La Factory modifie la structure des tables",
+                "is_correct": false
+              },
+              {
+                "text": "Le Seeder remplit la base",
+                "is_correct": true
+              },
+              {
+                "text": "`fake()->sentence()` génère une phrase aléatoire",
+                "is_correct": true
+              }
+            ],
+            "explanation": "C'est la migration qui modifie la structure, pas la Factory."
+          },
+          {
+            "text": "Dans PassQuiz, pourquoi `module_id` est-il `nullable()` dans la table `quiz` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Par erreur",
+                "is_correct": false
+              },
+              {
+                "text": "Pour accélérer les requêtes",
+                "is_correct": false
+              },
+              {
+                "text": "Parce qu'un quiz sans module est l'évaluation finale de la formation",
+                "is_correct": true
+              },
+              {
+                "text": "Parce que les modules sont facultatifs",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Section 9 du cahier : « Un quiz avec `module_id` nul est l'évaluation finale de la formation »."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": null,
+      "courses": [
+        {
+          "title": "Créer un Model : Eloquent et ses conventions",
+          "description": "Une table = une classe, une ligne = un objet.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Qu'est-ce qu'Eloquent ?\n\n- **Eloquent** est l'**ORM** de Laravel (Object-Relational Mapping)\n- Chaque **table** est représentée par une classe **Model**\n- Chaque **ligne** devient un **objet** PHP\n- On manipule la base avec des méthodes, **sans écrire de SQL**\n\n```php\n// SQL : SELECT * FROM posts WHERE active = 1\n$posts = Post::where('active', 1)->get();\n\n// Chaque élément est un objet Post\nforeach ($posts as $post) {\n    echo $post->title;\n}\n```\n\n> **Pourquoi un ORM ?** — Le code reste lisible, les requêtes sont protégées contre les injections SQL, et on change de base (MySQL, SQLite…) sans réécrire les requêtes.\n\n### Créer un Model et respecter les conventions\n\n- `php artisan make:model Post -m` : le model **et** sa migration (module 5)\n- Fichier généré dans `app/Models/`\n- **Convention** : model au **singulier** avec majuscule (`Post`), table au **pluriel** en minuscules (`posts`)\n- Si la convention ne marche pas, on précise le nom avec `$table`\n\n```php\n<?php\n\nnamespace App\\Models;\n\nuse Illuminate\\Database\\Eloquent\\Model;\n\nclass Post extends Model\n{\n    // table « posts » trouvée automatiquement\n}\n\nclass Cours extends Model\n{\n    // « Cours » au pluriel ne donne pas « cours » : on précise\n    protected $table = 'cours';\n}\n```"
+        },
+        {
+          "title": "Lire des données",
+          "description": "Tout récupérer, filtrer, trouver un élément.",
+          "duration_minutes": 20,
+          "position": 2,
+          "content": "### Récupérer des enregistrements\n\n- `all()` : toute la table\n- `where(...)->get()` : renvoie **toujours une collection** (éventuellement vide)\n- `first()` : le **premier** résultat, ou `null`\n- `orderBy`, `latest`, `count`… se combinent avant `get()`\n\n```php\n$posts = Post::all();                         // tous les articles\n\n$actifs = Post::where('active', 1)            // collection\n    ->orderBy('title')\n    ->get();\n\n$premier = Post::where('active', 1)->first(); // un objet ou null\n\n$nombre = Post::where('active', 1)->count();  // un nombre\n```\n\n### Trouver par identifiant : find ou findOrFail ?\n\n| Méthode | Si l'id n'existe pas |\n|---|---|\n| `Post::find(999)` | Renvoie `null` |\n| `Post::findOrFail(999)` | Déclenche une erreur **404** |\n\n```php\n$post = Post::find($id);\nif ($post === null) {\n    // à gérer soi-même, sinon erreur plus loin\n}\n\n// Plus sûr dans un controller\n$post = Post::findOrFail($id);\n```\n\n> **Rappel** — Avec le Route Model Binding (`show(Post $post)`, module 3), Laravel fait le `findOrFail` pour vous."
+        },
+        {
+          "title": "Créer, modifier et supprimer",
+          "description": "Écrire dans la base en toute sécurité.",
+          "duration_minutes": 25,
+          "position": 3,
+          "content": "### Créer, modifier, supprimer\n\n- `new` + `save()` : champ par champ\n- `create([...])` : en une ligne (assignation de masse)\n- `update([...])` : modifier ; `delete()` : supprimer\n- `all()`, `get()`, `find()` ne font que **lire**\n\n```php\n// Créer\n$post = new Post();\n$post->title = 'Bonjour';\n$post->save();\n\n$post = Post::create(['title' => 'Bonjour', 'content' => '…']);\n\n// Modifier\n$post->title = 'Nouveau titre';\n$post->save();\n// ou\n$post->update(['title' => 'Nouveau titre']);\n\n// Supprimer\n$post->delete();\n```\n\n### $fillable : se protéger de l'assignation de masse\n\n- `create()` et `update()` n'acceptent que les champs listés dans `$fillable`\n- Les autres champs envoyés sont **ignorés** : un visiteur ne peut pas ajouter `role=admin`\n- `$guarded = []` autorise **tout** : dangereux avec `$request->all()`\n\n```php\nclass Post extends Model\n{\n    protected $fillable = ['title', 'content', 'active'];\n}\n\n// Dangereux : tout champ envoyé serait accepté\n// protected $guarded = [];\n// User::create($request->all());\n\n// Sûr : valider, puis créer avec les seules données vérifiées\n$data = $request->validate(['title' => 'required|max:255']);\nPost::create($data);\n```\n\n### $casts : convertir automatiquement les colonnes\n\n- `$casts` indique le **type PHP** d'une colonne\n- `'datetime'` → objet date (Carbon) ; `'boolean'` → `true` / `false`\n\n```php\nclass ProgressionCours extends Model\n{\n    protected $table = 'progression_cours';\n\n    protected $casts = [\n        'termine_le' => 'datetime',\n    ];\n}\n\n$p->termine_le->format('d/m/Y'); // 25/09/2026\n```\n\n### Application PassQuiz — la tentative de quiz\n\nSection 11 du cahier : chronométrage et correction côté serveur.\n\n- Model `Tentative` avec `$fillable` et `$casts`\n- L'heure de début vient du **serveur** (`now()`), jamais du navigateur\n- `reussi` converti en booléen, `debut` / `fin` en dates\n\n```php\nclass Tentative extends Model\n{\n    protected $fillable = ['user_id', 'quiz_id', 'debut', 'fin', 'score', 'reussi'];\n\n    protected $casts = [\n        'debut'  => 'datetime',\n        'fin'    => 'datetime',\n        'reussi' => 'boolean',\n    ];\n}\n\n// TentativeController@demarrer\n$tentative = Tentative::create([\n    'user_id' => $request->user()->id,\n    'quiz_id' => $quiz->id,\n    'debut'   => now(), // heure du serveur : impossible à falsifier\n]);\n```\n\n### À retenir\n\n- Eloquent = ORM : une table = un Model, une ligne = un objet\n- Model au singulier, table au pluriel ; sinon `$table`\n- `get()` → collection ; `first()` / `find()` → objet ou `null` ; `findOrFail()` → 404\n- `create`, `update`, `save`, `delete` écrivent dans la base\n- `$fillable` protège l'assignation de masse ; `$casts` convertit les types\n\n### Pièges à éviter\n\n- `$guarded = []` avec `$request->all()` (n'importe quel champ accepté)\n- Utiliser `find()` sans vérifier `null`\n- Attendre un objet de `get()` (c'est une collection)\n- Oublier `$table` quand le pluriel n'est pas régulier (`cours`)\n- Prendre l'heure envoyée par le navigateur au lieu de `now()`\n\n*Module suivant → les relations entre les Models*"
+        }
+      ],
+      "number": 6,
+      "title": "Models et Eloquent ORM",
+      "description": "Lire et écrire dans la base avec des objets PHP, sans écrire de SQL.",
+      "quiz": {
+        "title": "Module 6 : Models et Eloquent ORM",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Qu'est-ce qu'Eloquent ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Un middleware",
+                "is_correct": false
+              },
+              {
+                "text": "Un outil de déploiement",
+                "is_correct": false
+              },
+              {
+                "text": "Le moteur de templates de Laravel",
+                "is_correct": false
+              },
+              {
+                "text": "L'ORM de Laravel : on manipule la base avec des objets, sans écrire de SQL",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Chaque ligne devient un objet PHP et chaque table est représentée par une classe Model."
+          },
+          {
+            "text": "Par convention, à quelle table est lié le model `Post` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`Post`",
+                "is_correct": false
+              },
+              {
+                "text": "`post`",
+                "is_correct": false
+              },
+              {
+                "text": "`posts`",
+                "is_correct": true
+              },
+              {
+                "text": "`tbl_post`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le model est au singulier et la table au pluriel, en minuscules. Sinon, on précise `$table`."
+          },
+          {
+            "text": "Que renvoie `Post::where('active', 1)->get()` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Le nombre de posts",
+                "is_correct": false
+              },
+              {
+                "text": "`true` ou `false`",
+                "is_correct": false
+              },
+              {
+                "text": "Une collection de Posts (éventuellement vide)",
+                "is_correct": true
+              },
+              {
+                "text": "Un seul objet Post",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`get()` renvoie toujours une collection. Pour un seul résultat, on utilise `first()`."
+          },
+          {
+            "text": "Que renvoie `Post::find(999)` si l'id 999 n'existe pas ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Le dernier post",
+                "is_correct": false
+              },
+              {
+                "text": "Un Post vide",
+                "is_correct": false
+              },
+              {
+                "text": "Une erreur 404",
+                "is_correct": false
+              },
+              {
+                "text": "`null`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`find` renvoie `null` ; c'est `findOrFail` qui déclenche une 404."
+          },
+          {
+            "text": "Quelles méthodes modifient ou suppriment des données ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`Post::all()`",
+                "is_correct": false
+              },
+              {
+                "text": "`$post->update([...])`",
+                "is_correct": true
+              },
+              {
+                "text": "`$post->delete()`",
+                "is_correct": true
+              },
+              {
+                "text": "`$post->save()`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`all()` ne fait que lire."
+          },
+          {
+            "text": "À quoi sert `$fillable` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "À cacher des champs en JSON",
+                "is_correct": false
+              },
+              {
+                "text": "À lister les colonnes de la table",
+                "is_correct": false
+              },
+              {
+                "text": "À lister les champs autorisés lors d'une assignation de masse (`create`, `update`)",
+                "is_correct": true
+              },
+              {
+                "text": "À rendre des champs obligatoires",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les champs absents de `$fillable` sont ignorés ou refusés. Cela protège contre l'ajout de champs non prévus, comme `role`."
+          },
+          {
+            "text": "`$guarded = []` combiné à `User::create($request->all())` est une pratique sûre.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. Tout champ envoyé serait accepté, par exemple `role=admin`. Il faut valider et lister les champs."
+          },
+          {
+            "text": "Quelle propriété indique le nom de table quand la convention ne marche pas ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`$name`",
+                "is_correct": false
+              },
+              {
+                "text": "`$table`",
+                "is_correct": true
+              },
+              {
+                "text": "`$fillable`",
+                "is_correct": false
+              },
+              {
+                "text": "`$casts`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Exemple : `protected $table = 'cours';` pour le model `Cours`."
+          },
+          {
+            "text": "Que permet `protected $casts = ['termine_le' => 'datetime'];` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "De convertir automatiquement la valeur en objet date",
+                "is_correct": true
+              },
+              {
+                "text": "De l'indexer",
+                "is_correct": false
+              },
+              {
+                "text": "De rendre la colonne obligatoire",
+                "is_correct": false
+              },
+              {
+                "text": "De supprimer la colonne",
+                "is_correct": false
+              }
+            ],
+            "explanation": "On peut alors écrire `$p->termine_le->format('d/m/Y')`."
+          },
+          {
+            "text": "Dans PassQuiz, l'heure de début d'une tentative doit venir du serveur (`now()`), pas du navigateur.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. Section 11 : le chronométrage se fait côté serveur, car une heure envoyée par le client pourrait être falsifiée."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Laravel_Module_07_Relations_Cours.pdf",
+      "courses": [
+        {
+          "title": "One to One",
+          "description": "Un model accède aux données d'un autre.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Un utilisateur a un seul profil\n\n**User.php**\n\n```php\npublic function profile()\n{\n    return $this->hasOne(Profile::class);\n}\n```\n\n- `hasOne` : dans le model qui « possède »\n\n**Profile.php**\n\n```php\npublic function user()\n{\n    return $this->belongsTo(User::class);\n}\n```\n\n- `belongsTo` : dans le model qui contient la clé étrangère `user_id`\n\n> **Utilisation** — `$user->profile->bio` · `$profile->user->name` : on appelle la relation comme une propriété, Eloquent fait la requête."
+        },
+        {
+          "title": "One to Many",
+          "description": "La relation la plus courante.",
+          "duration_minutes": 20,
+          "position": 2,
+          "content": "### Un utilisateur possède plusieurs articles\n\n- `hasMany` : dans le model **parent**\n- `belongsTo` : dans le model **enfant** (qui a la clé étrangère)\n- `$user->posts` (propriété) → résultat ; `$user->posts()` (méthode) → requête à compléter\n- Créer via la relation remplit automatiquement `user_id`\n\n```php\n// User.php (parent)\npublic function posts()\n{\n    return $this->hasMany(Post::class);\n}\n\n// Post.php (enfant, contient user_id)\npublic function user()\n{\n    return $this->belongsTo(User::class);\n}\n\n// Utilisation\n$user->posts;                                   // collection de ses articles\n$post->user->name;                              // son auteur\n$user->posts()->count();                        // requête : nombre d'articles\n$user->posts()->create(['title' => 'Nouveau']); // user_id rempli\n```"
+        },
+        {
+          "title": "Many to Many et Eager Loading",
+          "description": "Une table pivot, et des requêtes groupées.",
+          "duration_minutes": 30,
+          "position": 3,
+          "content": "### Many to Many et table pivot\n\n- Un article a plusieurs tags ; un tag est sur plusieurs articles\n- La **table pivot** relie les deux (`post_tag` : noms au singulier, ordre alphabétique)\n- `belongsToMany` des deux côtés\n- `attach`, `detach`, `sync` gèrent les lignes de la pivot\n\n```php\n// php artisan make:migration create_post_tag_table\nSchema::create('post_tag', function (Blueprint $t) {\n    $t->foreignId('post_id')->constrained()->cascadeOnDelete();\n    $t->foreignId('tag_id')->constrained()->cascadeOnDelete();\n    $t->primary(['post_id', 'tag_id']);\n});\n\n// Post.php\npublic function tags()\n{\n    return $this->belongsToMany(Tag::class);\n}\n\n// Attacher / détacher / synchroniser\n$post->tags()->attach([1, 3]);\n$post->tags()->detach(3);\n$post->tags()->sync([1, 2]);\n```\n\n### Eager Loading : le problème N+1\n\n**Sans : 1 + N requêtes**\n\n```php\n$posts = Post::all();               // 1 requête\nforeach ($posts as $post) {\n    echo $post->user->name;         // +1 par article !\n}\n// 100 articles = 101 requêtes\n```\n\n- Chaque accès à `->user` déclenche une requête\n\n**Avec : quelques requêtes**\n\n```php\n$posts = Post::with('user', 'tags')->get();\nforeach ($posts as $post) {\n    echo $post->user->name;         // déjà chargé\n}\n// 100 articles = 3 requêtes\n```\n\n- `with()` charge les relations en avance\n- Sur un objet déjà chargé : `$post->load('tags')`\n\n### Application PassQuiz — la chaîne Formation → Module → Cours\n\nLe MCD de la section 9, en relations Eloquent.\n\n- Formation `hasMany` Module, Module `hasMany` Cours\n- Inscription = `belongsToMany` avec la table `inscriptions`\n- `with('modules.cours')` : tout le programme en 3 requêtes\n- EF-10 : progression = cours terminés ÷ total × 100\n\n```php\n// Formation.php\npublic function modules()\n{\n    return $this->hasMany(Module::class)->orderBy('ordre');\n}\n\npublic function cours() // à travers les modules\n{\n    return $this->hasManyThrough(Cours::class, Module::class);\n}\n\npublic function apprenants()\n{\n    return $this->belongsToMany(User::class, 'inscriptions')\n        ->withTimestamps();\n}\n\n// Module.php\npublic function cours()\n{\n    return $this->hasMany(Cours::class)->orderBy('ordre');\n}\n\n// ProgressionController : EF-10\n$total = $formation->cours()->count();\n$faits = ProgressionCours::where('user_id', $user->id)\n    ->whereIn('cours_id', $formation->cours()->pluck('cours.id'))\n    ->count();\n$pourcentage = $total ? round($faits / $total * 100) : 0;\n```\n\n### À retenir\n\n- One to One : `hasOne` / `belongsTo`\n- One to Many : `hasMany` (parent) / `belongsTo` (enfant)\n- Many to Many : `belongsToMany` + table pivot\n- `attach`, `detach`, `sync` sur la pivot\n- Eager Loading : `with()` pour éviter N+1\n\n### Pièges à éviter\n\n- Mettre `hasMany` du côté de la table qui contient la clé étrangère\n- Confondre `$user->posts` (résultat) et `$user->posts()` (requête)\n- Boucle sur des relations sans `with()` : problème N+1\n- Table pivot mal nommée (`tags_posts`) sans la préciser\n- Oublier la clé étrangère dans la migration\n\n*Module suivant → formulaires et validation*"
+        }
+      ],
+      "number": 7,
+      "title": "Relations entre les Models",
+      "description": "Relier les tables : un-à-un, un-à-plusieurs, plusieurs-à-plusieurs.",
+      "quiz": {
+        "title": "Module 7 : Relations entre les Models",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Un utilisateur a un seul profil. Quelle méthode met-on dans `User` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`hasOne(Profile::class)`",
+                "is_correct": true
+              },
+              {
+                "text": "`belongsTo(Profile::class)`",
+                "is_correct": false
+              },
+              {
+                "text": "`belongsToMany(Profile::class)`",
+                "is_correct": false
+              },
+              {
+                "text": "`hasMany(Profile::class)`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le `User` « possède » un profil, et c'est la table `profiles` qui contient `user_id`."
+          },
+          {
+            "text": "Dans une relation One to Many `User` → `Post`, où place-t-on `belongsTo(User::class)` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Dans le controller",
+                "is_correct": false
+              },
+              {
+                "text": "Dans `User`",
+                "is_correct": false
+              },
+              {
+                "text": "Dans `Post`, le model qui contient la clé étrangère `user_id`",
+                "is_correct": true
+              },
+              {
+                "text": "Dans la migration",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`belongsTo` se place toujours du côté de la clé étrangère."
+          },
+          {
+            "text": "Quelle est la différence entre `$user->posts` et `$user->posts()` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`posts` ne fonctionne qu'en Blade",
+                "is_correct": false
+              },
+              {
+                "text": "`posts` donne le résultat (collection) ; `posts()` donne une requête qu'on peut compléter",
+                "is_correct": true
+              },
+              {
+                "text": "Aucune",
+                "is_correct": false
+              },
+              {
+                "text": "`posts()` est plus lent",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Exemple : `$user->posts()->where('active', 1)->count()`."
+          },
+          {
+            "text": "Pour une relation Many to Many entre `Post` et `Tag`, qu'est-ce qui est nécessaire ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Une colonne `tag_id` dans `posts`",
+                "is_correct": false
+              },
+              {
+                "text": "Une table pivot `post_tag`",
+                "is_correct": true
+              },
+              {
+                "text": "Les clés `post_id` et `tag_id` dans la pivot",
+                "is_correct": true
+              },
+              {
+                "text": "`belongsToMany` dans `Post` et dans `Tag`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Les clés étrangères sont dans la pivot, pas dans `posts`."
+          },
+          {
+            "text": "Que fait `$post->tags()->sync([1, 2])` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Crée deux nouveaux tags",
+                "is_correct": false
+              },
+              {
+                "text": "Garde exactement les tags 1 et 2 : ajoute ceux qui manquent, retire les autres",
+                "is_correct": true
+              },
+              {
+                "text": "Supprime les tags 1 et 2",
+                "is_correct": false
+              },
+              {
+                "text": "Ajoute les tags 1 et 2 sans toucher aux autres",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`attach` ajoute, `detach` retire, et `sync` fixe la liste exacte."
+          },
+          {
+            "text": "Qu'est-ce que le problème N+1 ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "1 requête pour la liste, puis 1 requête de plus pour chaque élément quand on accède à sa relation",
+                "is_correct": true
+              },
+              {
+                "text": "Une table en trop",
+                "is_correct": false
+              },
+              {
+                "text": "Un dépassement de mémoire",
+                "is_correct": false
+              },
+              {
+                "text": "Une erreur de clé étrangère",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Avec 100 articles, cela fait 101 requêtes. `with()` ramène le tout à quelques requêtes."
+          },
+          {
+            "text": "Comment charger les auteurs en même temps que les articles ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`Post::all('user')`",
+                "is_correct": false
+              },
+              {
+                "text": "`Post::with('user')->get()`",
+                "is_correct": true
+              },
+              {
+                "text": "`Post::load()`",
+                "is_correct": false
+              },
+              {
+                "text": "`Post::join('user')`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "C'est l'Eager Loading. `load()` s'utilise sur un objet déjà récupéré."
+          },
+          {
+            "text": "`$user->posts()->create([...])` remplit automatiquement la colonne `user_id`.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. Créer via la relation renseigne la clé étrangère."
+          },
+          {
+            "text": "Dans PassQuiz, quelle relation relie `Formation` et `Module` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Formation `belongsTo` Module",
+                "is_correct": false
+              },
+              {
+                "text": "Formation `belongsToMany` Module",
+                "is_correct": false
+              },
+              {
+                "text": "Formation `hasOne` Module",
+                "is_correct": false
+              },
+              {
+                "text": "Formation `hasMany` Module",
+                "is_correct": true
+              }
+            ],
+            "explanation": "MCD : une formation contient plusieurs modules, et la table `modules` porte `formation_id`."
+          },
+          {
+            "text": "Comment récupérer une formation avec ses modules et leurs cours, en évitant N+1 ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`Module::with('formation')`",
+                "is_correct": false
+              },
+              {
+                "text": "`Formation::find($id)->modules->cours`",
+                "is_correct": false
+              },
+              {
+                "text": "`Formation::with('modules.cours')->find($id)`",
+                "is_correct": true
+              },
+              {
+                "text": "`Formation::all('cours')`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "La notation à point charge les relations imbriquées."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": null,
+      "courses": [
+        {
+          "title": "Créer et protéger un formulaire",
+          "description": "GET pour lire, POST pour envoyer.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Un formulaire Blade\n\n- **GET** : lire ou rechercher (paramètres visibles dans l'URL)\n- **POST** : envoyer des données qui modifient la base\n- L'attribut **name** devient la clé côté PHP\n- `action` : utiliser une **route nommée**\n\n```blade\n{{-- resources/views/posts/create.blade.php --}}\n<form method=\"POST\" action=\"{{ route('posts.store') }}\">\n  @csrf\n\n  <label for=\"title\">Titre</label>\n  <input type=\"text\" id=\"title\" name=\"title\">\n\n  <button>Enregistrer</button>\n</form>\n\n{{-- Recherche : GET, pas besoin de @csrf --}}\n<form method=\"GET\" action=\"{{ route('posts.index') }}\">\n  <input type=\"search\" name=\"q\">\n</form>\n```\n\n### La protection CSRF\n\n- **CSRF** (Cross-Site Request Forgery) : un site piégé envoie un formulaire **à votre place**, avec votre session\n- `@csrf` ajoute un **jeton caché** que seul votre site connaît\n- Laravel vérifie ce jeton sur chaque POST, PUT, PATCH, DELETE\n- Jeton absent ou expiré → erreur **419** « Page Expired »\n\n> **Obligatoire** — Tout formulaire POST d'une page Blade doit contenir `@csrf`. (Une API avec jeton Sanctum Bearer n'en a pas besoin.)"
+        },
+        {
+          "title": "Récupérer et valider les données",
+          "description": "Ne jamais faire confiance à ce qui arrive du navigateur.",
+          "duration_minutes": 15,
+          "position": 2,
+          "content": "### Lire puis valider\n\n- `input()`, `only()` : lire les valeurs\n- `validate()` : vérifie les règles et **renvoie les données valides**\n- En cas d'échec : **retour au formulaire** avec les messages\n- `with('success', …)` : message flash pour la page suivante\n\n```php\npublic function store(Request $request)\n{\n    $title = $request->input('title');      // un champ\n    $all   = $request->only(['title', 'email']);\n\n    $data = $request->validate([\n        'title' => 'required|max:255',\n        'email' => 'required|email',\n    ]);\n\n    Post::create($data);   // seulement les champs validés\n\n    return redirect()->route('posts.index')\n        ->with('success', 'Article créé !');\n}\n```\n\n### Les règles de validation courantes\n\n| Règle | Signification |\n|---|---|\n| `required` | Obligatoire |\n| `nullable` | Peut être vide |\n| `string` / `integer` / `boolean` | Type attendu |\n| `min:8` / `max:255` | Longueur (texte) ou valeur (nombre) minimale / maximale |\n| `email` | Adresse e-mail valide |\n| `unique:users,email` | N'existe pas déjà dans la table `users` |\n| `exists:formations,id` | Existe dans la table |\n| `confirmed` | Identique au champ `password_confirmation` |\n| `in:admin,formateur,apprenant` | Fait partie de la liste |"
+        },
+        {
+          "title": "Afficher les erreurs",
+          "description": "Dire précisément ce qui ne va pas, sans perdre la saisie.",
+          "duration_minutes": 15,
+          "position": 3,
+          "content": "### @error et old()\n\n- **@error('champ')** : bloc affiché si ce champ a une erreur, avec `$message`\n- **old('champ')** : remet la valeur saisie après l'échec\n- `$errors` : toutes les erreurs, disponible dans toutes les vues\n- Messages en français : paquet `laravel-lang` ou `lang/fr/validation.php`\n\n```blade\n<input type=\"text\" name=\"title\"\n       value=\"{{ old('title') }}\"\n       class=\"@error('title') is-invalid @enderror\">\n\n@error('title')\n  <p class=\"erreur\">{{ $message }}</p>\n@enderror\n\n{{-- Toutes les erreurs --}}\n@if ($errors->any())\n  <ul>\n    @foreach ($errors->all() as $e)\n      <li>{{ $e }}</li>\n    @endforeach\n  </ul>\n@endif\n```\n\n### Application PassQuiz — valider l'inscription (EF-01)\n\nE-mail unique, mot de passe ≥ 8 caractères, rôle apprenant.\n\n- `unique:users,email` : un compte par e-mail\n- `min:8|confirmed` : règle du cahier\n- Le rôle n'est **pas** lu dans la requête : forcé à `apprenant`\n- API : en cas d'échec, Laravel répond **422** en JSON, que React affiche\n\n```php\n// AuthController@register\npublic function register(Request $request)\n{\n    $data = $request->validate([\n        'nom'      => 'required|string|max:100',\n        'email'    => 'required|email|unique:users,email',\n        'password' => 'required|string|min:8|confirmed',\n    ]);\n\n    $user = User::create([\n        'nom'          => $data['nom'],\n        'email'        => $data['email'],\n        'mot_de_passe' => Hash::make($data['password']),\n        'role'         => 'apprenant',   // jamais depuis la requête\n    ]);\n\n    return response()->json($user, 201);\n}\n```\n\n### À retenir\n\n- GET pour lire, POST pour envoyer\n- `@csrf` protège contre les envois falsifiés\n- `$request->validate([...])` renvoie les données sûres\n- `@error` + `$message` et `old()` dans la vue\n- Règles : required, max, email, unique, confirmed…\n\n### Pièges à éviter\n\n- Oublier `@csrf` : erreur 419\n- Enregistrer `$request->all()` au lieu des données validées\n- Oublier `name` sur un champ : la valeur n'arrive jamais\n- Ne pas remettre `old()` : l'utilisateur ressaisit tout\n- Laisser le client choisir son rôle\n\n*Module suivant → le CRUD avec Laravel*"
+        }
+      ],
+      "number": 8,
+      "title": "Formulaires et validation",
+      "description": "Recevoir des données de l'utilisateur, les vérifier et afficher les erreurs.",
+      "quiz": {
+        "title": "Module 8 : Formulaires et validation",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Quelle méthode HTTP utiliser pour un formulaire de recherche ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "DELETE",
+                "is_correct": false
+              },
+              {
+                "text": "GET",
+                "is_correct": true
+              },
+              {
+                "text": "POST",
+                "is_correct": false
+              },
+              {
+                "text": "PUT",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Une recherche ne modifie rien. GET met les critères dans l'URL, qu'on peut ensuite partager."
+          },
+          {
+            "text": "Que se passe-t-il si un formulaire POST n'a pas `@csrf` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Erreur 404",
+                "is_correct": false
+              },
+              {
+                "text": "Rien",
+                "is_correct": false
+              },
+              {
+                "text": "Erreur 419 (Page Expired)",
+                "is_correct": true
+              },
+              {
+                "text": "Les données sont enregistrées sans validation",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Sans jeton CSRF valide, Laravel refuse la requête."
+          },
+          {
+            "text": "Contre quoi protège le jeton CSRF ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Un site piégé qui envoie un formulaire à votre site en utilisant votre session",
+                "is_correct": true
+              },
+              {
+                "text": "Les injections SQL",
+                "is_correct": false
+              },
+              {
+                "text": "Les mots de passe faibles",
+                "is_correct": false
+              },
+              {
+                "text": "Les fichiers trop gros",
+                "is_correct": false
+              }
+            ],
+            "explanation": "C'est le principe de la Cross-Site Request Forgery."
+          },
+          {
+            "text": "Que renvoie `$request->validate([...])` si tout est valide ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`true`",
+                "is_correct": false
+              },
+              {
+                "text": "Le tableau des données validées",
+                "is_correct": true
+              },
+              {
+                "text": "La requête complète",
+                "is_correct": false
+              },
+              {
+                "text": "Rien",
+                "is_correct": false
+              }
+            ],
+            "explanation": "On peut donc écrire directement `Post::create($data)` avec seulement les champs vérifiés."
+          },
+          {
+            "text": "Que fait Laravel si la validation échoue (formulaire web) ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Renvoie au formulaire avec les erreurs et la saisie précédente",
+                "is_correct": true
+              },
+              {
+                "text": "Affiche une page blanche",
+                "is_correct": false
+              },
+              {
+                "text": "Supprime la session",
+                "is_correct": false
+              },
+              {
+                "text": "Enregistre quand même",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les erreurs sont lisibles avec `@error` et `$errors`, et la saisie avec `old()`."
+          },
+          {
+            "text": "Quelles règles correspondent à « e-mail obligatoire, valide et pas déjà utilisé » ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`email`",
+                "is_correct": true
+              },
+              {
+                "text": "`required`",
+                "is_correct": true
+              },
+              {
+                "text": "`unique:users,email`",
+                "is_correct": true
+              },
+              {
+                "text": "`confirmed`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`confirmed` sert à vérifier qu'un champ est identique à sa confirmation (mot de passe)."
+          },
+          {
+            "text": "Que fait la règle `confirmed` sur `password` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vérifie la force du mot de passe",
+                "is_correct": false
+              },
+              {
+                "text": "Envoie un e-mail de confirmation",
+                "is_correct": false
+              },
+              {
+                "text": "Vérifie que `password` est identique à `password_confirmation`",
+                "is_correct": true
+              },
+              {
+                "text": "Hache le mot de passe",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le formulaire doit contenir un champ nommé `password_confirmation`."
+          },
+          {
+            "text": "À quoi sert `old('title')` dans une vue ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "À afficher l'ancienne valeur en base",
+                "is_correct": false
+              },
+              {
+                "text": "À supprimer le champ",
+                "is_correct": false
+              },
+              {
+                "text": "À afficher l'erreur",
+                "is_correct": false
+              },
+              {
+                "text": "À remettre la valeur saisie après un échec de validation",
+                "is_correct": true
+              }
+            ],
+            "explanation": "L'utilisateur n'a pas à tout ressaisir."
+          },
+          {
+            "text": "Dans `@error('title') … @enderror`, le message est disponible dans la variable `$message`.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai."
+          },
+          {
+            "text": "Dans l'inscription PassQuiz, pourquoi forcer `'role' => 'apprenant'` au lieu de le lire dans la requête ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Parce que le champ n'existe pas",
+                "is_correct": false
+              },
+              {
+                "text": "Pour la performance",
+                "is_correct": false
+              },
+              {
+                "text": "Sinon un visiteur pourrait envoyer `role=admin` et devenir administrateur",
+                "is_correct": true
+              },
+              {
+                "text": "Pour respecter le CSRF",
+                "is_correct": false
+              }
+            ],
+            "explanation": "EF-01 : tout compte est créé avec le rôle apprenant. Seul l'admin change les rôles (section 4.1)."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Laravel_Module_09_CRUD_Cours.pdf",
+      "courses": [
+        {
+          "title": "Présentation du CRUD et routes",
+          "description": "Create, Read, Update, Delete.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Les 4 opérations et leurs 7 routes\n\n| Opération | Verbe + URL | Méthode | Rôle |\n|---|---|---|---|\n| Read | GET /posts | `index` | Liste |\n| Create | GET /posts/create | `create` | Formulaire de création |\n| Create | POST /posts | `store` | Enregistrer |\n| Read | GET /posts/{post} | `show` | Détail |\n| Update | GET /posts/{post}/edit | `edit` | Formulaire prérempli |\n| Update | PUT /posts/{post} | `update` | Mettre à jour |\n| Delete | DELETE /posts/{post} | `destroy` | Supprimer |\n\n> **Deux commandes** — `php artisan make:controller PostController --resource --model=Post` puis `Route::resource('posts', PostController::class);`"
+        },
+        {
+          "title": "Create et Read",
+          "description": "Afficher un formulaire, enregistrer, lister.",
+          "duration_minutes": 15,
+          "position": 2,
+          "content": "### Create : create() et store()\n\n- `create` : affiche le formulaire (vide)\n- `store` : **valide**, enregistre, puis **redirige**\n- Redirection après POST : un rafraîchissement ne renvoie pas le formulaire deux fois\n\n```php\npublic function create()\n{\n    return view('posts.create');\n}\n\npublic function store(Request $request)\n{\n    $data = $request->validate([\n        'title'   => 'required|max:255',\n        'content' => 'nullable',\n    ]);\n\n    Post::create($data);\n\n    return redirect()->route('posts.index')\n        ->with('success', 'Article créé.');\n}\n```\n\n### Read : index() et show()\n\n**PostController**\n\n```php\npublic function index()\n{\n    $posts = Post::latest()->get();\n    return view('posts.index', compact('posts'));\n}\n\npublic function show(Post $post)\n{\n    return view('posts.show', compact('post'));\n}\n```\n\n- `latest()` : du plus récent au plus ancien\n- `show(Post $post)` : chargé par Route Model Binding\n\n**posts/index.blade.php**\n\n```blade\n@forelse ($posts as $post)\n  <a href=\"{{ route('posts.show', $post) }}\">\n    {{ $post->title }}\n  </a>\n@empty\n  <p>Aucun article.</p>\n@endforelse\n```\n\n- Lien vers le détail avec la **route nommée**"
+        },
+        {
+          "title": "Update et Delete",
+          "description": "Modifier un formulaire prérempli, supprimer avec confirmation.",
+          "duration_minutes": 15,
+          "position": 3,
+          "content": "### Update : edit() et update()\n\n- Formulaire **prérempli** : `old('title', $post->title)`\n- `@method('PUT')` : HTML ne connaît que POST\n- Valider aussi à la modification\n\n```php\npublic function edit(Post $post)\n{\n    return view('posts.edit', compact('post'));\n}\n\npublic function update(Request $request, Post $post)\n{\n    $data = $request->validate([\n        'title'   => 'required|max:255',\n        'content' => 'nullable',\n    ]);\n\n    $post->update($data);\n\n    return redirect()->route('posts.index');\n}\n\n{{-- posts/edit.blade.php --}}\n<form method=\"POST\" action=\"{{ route('posts.update', $post) }}\">\n  @csrf @method('PUT')\n  <input name=\"title\" value=\"{{ old('title', $post->title) }}\">\n</form>\n```\n\n> **Pas de $request->all()** — `$post->update($request->all())` accepterait n'importe quel champ envoyé. On met à jour avec les **données validées**.\n\n### Delete : destroy()\n\n**PostController**\n\n```php\npublic function destroy(Post $post)\n{\n    $post->delete();\n\n    return back()\n        ->with('success', 'Supprimé.');\n}\n```\n\n- `back()` : retour à la page précédente\n\n**Le bouton (vue)**\n\n```blade\n<form method=\"POST\"\n      action=\"{{ route('posts.destroy', $post) }}\"\n      onsubmit=\"return confirm('Supprimer ?')\">\n  @csrf\n  @method('DELETE')\n  <button>Supprimer</button>\n</form>\n```\n\n- Jamais de suppression par un simple **lien GET**\n- Une confirmation évite les clics accidentels"
+        },
+        {
+          "title": "Pagination et recherche",
+          "description": "Des listes longues, mais lisibles.",
+          "duration_minutes": 15,
+          "position": 4,
+          "content": "### Paginer et filtrer\n\n**PostController@index**\n\n```php\n$q = $request->input('q');\n\n$posts = Post::when($q, fn ($query) =>\n        $query->where('title', 'like', \"%$q%\"))\n    ->latest()\n    ->paginate(10)\n    ->withQueryString();\n```\n\n- `paginate(10)` : pages de **10 éléments**\n- `when($q, …)` : filtre seulement si un mot est saisi\n- `withQueryString()` : garde `?q=` dans les liens de pages\n\n**Dans la vue**\n\n```blade\n<form method=\"GET\">\n  <input name=\"q\" value=\"{{ request('q') }}\">\n</form>\n\n@foreach ($posts as $post) … @endforeach\n\n{{ $posts->links() }}\n```\n\n- `links()` affiche les numéros de page\n- `like \"%mot%\"` : le titre **contient** le mot\n\n### Application PassQuiz — le CRUD des formations (formateur)\n\nSection 4.2 : le formateur gère SES formations. API → JSON.\n\n- `apiResource` : pas de `create` / `edit` (React affiche les formulaires)\n- Chaque formateur ne voit que **ses** formations\n- Statut `brouillon` par défaut : l'admin publie (section 4.1)\n- Pagination JSON : React reçoit `data`, `links`, `meta`\n\n```php\nclass Admin\\FormationController extends Controller\n{\n    public function index(Request $request)\n    {\n        return Formation::where('formateur_id', $request->user()->id)\n            ->when($request->q, fn ($q, $mot) =>\n                $q->where('titre', 'like', \"%$mot%\"))\n            ->withCount('modules')\n            ->paginate(10);\n    }\n\n    public function store(Request $request)\n    {\n        $data = $request->validate([\n            'titre'       => 'required|max:255',\n            'description' => 'nullable',\n            'niveau'      => 'required|in:debutant,intermediaire,avance',\n        ]);\n        $formation = $request->user()->formations()->create(\n            $data + ['statut' => 'brouillon']);\n        return response()->json($formation, 201);\n    }\n\n    public function destroy(Formation $formation)\n    {\n        $formation->delete();\n        return response()->noContent();   // 204\n    }\n}\n```\n\n### À retenir\n\n- CRUD = 7 routes `resource` ↔ 7 méthodes\n- store / update : **valider, enregistrer, rediriger**\n- Formulaire d'édition prérempli avec `old('x', $post->x)`\n- Suppression : formulaire POST + `@method('DELETE')`\n- `paginate(10)` + `links()`, recherche avec `like`\n\n### Pièges à éviter\n\n- Supprimer par un lien GET\n- `update($request->all())` sans validation\n- Oublier `@method('PUT')` / `@method('DELETE')`\n- Pas de redirection après un POST (double envoi au rafraîchissement)\n- Pagination qui perd le filtre (`withQueryString()`)\n\n*Module suivant → l'authentification*"
+        }
+      ],
+      "number": 9,
+      "title": "Le CRUD avec Laravel",
+      "description": "Créer, lire, modifier et supprimer : l'application complète, de la route à la vue.",
+      "quiz": {
+        "title": "Module 9 : Le CRUD avec Laravel",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Que signifie CRUD ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Create",
+                "is_correct": true
+              },
+              {
+                "text": "Upload",
+                "is_correct": false
+              },
+              {
+                "text": "Delete",
+                "is_correct": true
+              },
+              {
+                "text": "Read",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Create, Read, Update, Delete."
+          },
+          {
+            "text": "Quelle méthode du Resource Controller enregistre un nouvel article ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`update`",
+                "is_correct": false
+              },
+              {
+                "text": "`store`",
+                "is_correct": true
+              },
+              {
+                "text": "`edit`",
+                "is_correct": false
+              },
+              {
+                "text": "`create`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`create` affiche le formulaire. `store` reçoit le POST et enregistre."
+          },
+          {
+            "text": "Pourquoi rediriger après un `store` réussi ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "C'est obligatoire en PHP",
+                "is_correct": false
+              },
+              {
+                "text": "Pour supprimer la session",
+                "is_correct": false
+              },
+              {
+                "text": "Pour vider le cache",
+                "is_correct": false
+              },
+              {
+                "text": "Pour éviter qu'un rafraîchissement renvoie le formulaire une deuxième fois",
+                "is_correct": true
+              }
+            ],
+            "explanation": "C'est le principe Post/Redirect/Get : la page affichée après l'envoi est une simple page GET."
+          },
+          {
+            "text": "Comment préremplir le champ titre du formulaire d'édition, en gardant la saisie après une erreur ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`value=\"title\"`",
+                "is_correct": false
+              },
+              {
+                "text": "`value=\"{{ $post->title }}\"`",
+                "is_correct": false
+              },
+              {
+                "text": "`value=\"{{ old('title', $post->title) }}\"`",
+                "is_correct": true
+              },
+              {
+                "text": "`value=\"{{ old('title') }}\"`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`old()` prend la saisie précédente si elle existe, sinon la valeur par défaut (`$post->title`)."
+          },
+          {
+            "text": "Quel est le problème de `$post->update($request->all())` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Les données ne sont pas validées : n'importe quel champ envoyé peut être enregistré",
+                "is_correct": true
+              },
+              {
+                "text": "Il supprime le post",
+                "is_correct": false
+              },
+              {
+                "text": "Aucun",
+                "is_correct": false
+              },
+              {
+                "text": "Il ne fonctionne pas avec PUT",
+                "is_correct": false
+              }
+            ],
+            "explanation": "On met à jour avec `$request->validate(...)`, ou au minimum avec `$fillable` bien défini."
+          },
+          {
+            "text": "Un simple lien `<a href=\"/posts/1/delete\">` est une bonne façon de supprimer un article.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. Un GET ne doit jamais modifier de données (robots, préchargement des liens). On utilise un formulaire POST avec `@method('DELETE')` et `@csrf`."
+          },
+          {
+            "text": "Que fait `Post::latest()->paginate(10)` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Renvoie 10 pages",
+                "is_correct": false
+              },
+              {
+                "text": "Supprime les anciens articles",
+                "is_correct": false
+              },
+              {
+                "text": "Renvoie les 10 premiers articles uniquement",
+                "is_correct": false
+              },
+              {
+                "text": "Découpe la liste en pages de 10, triées du plus récent au plus ancien",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Le numéro de page est lu dans `?page=`, et `{{ $posts->links() }}` affiche la navigation."
+          },
+          {
+            "text": "Quelle condition trouve les articles dont le titre CONTIENT « laravel » ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`where('title', 'like', '%laravel%')`",
+                "is_correct": true
+              },
+              {
+                "text": "`where('title', '=', '%laravel%')`",
+                "is_correct": false
+              },
+              {
+                "text": "`find('laravel')`",
+                "is_correct": false
+              },
+              {
+                "text": "`where('title', 'laravel')`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`%` remplace n'importe quelle suite de caractères avec `like`."
+          },
+          {
+            "text": "À quoi sert `->withQueryString()` après `paginate()` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "À compter les pages",
+                "is_correct": false
+              },
+              {
+                "text": "À trier les résultats",
+                "is_correct": false
+              },
+              {
+                "text": "À chiffrer l'URL",
+                "is_correct": false
+              },
+              {
+                "text": "À conserver les paramètres actuels (ex. `?q=`) dans les liens de pagination",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Sinon, la recherche serait perdue en passant à la page 2."
+          },
+          {
+            "text": "Dans PassQuiz, quel statut a une formation créée par un formateur ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Aucun",
+                "is_correct": false
+              },
+              {
+                "text": "`brouillon`, puis l'admin la publie",
+                "is_correct": true
+              },
+              {
+                "text": "`archive`",
+                "is_correct": false
+              },
+              {
+                "text": "`publie`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Sections 4.1 et 4.2 : l'admin valide et publie. EF-05 : seules les formations publiées sont visibles."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Laravel_Module_10_Authentification_Cours.pdf",
+      "courses": [
+        {
+          "title": "Inscription, connexion et mots de passe",
+          "description": "Vérifier qui est l'utilisateur avant de lui donner accès.",
+          "duration_minutes": 25,
+          "position": 1,
+          "content": "### Authentification ou autorisation ?\n\n| | Authentification | Autorisation |\n|---|---|---|\n| Question | **QUI** es-tu ? | **AS-TU LE DROIT** ? |\n| Exemple | Connexion avec e-mail + mot de passe | Cet utilisateur peut-il modifier cette formation ? |\n| Résultat / outils | L'utilisateur est identifié | Middleware, rôles, Gates, Policies |\n| Où | Ce module | Modules 11 et 12 |\n\n### Un starter kit : Breeze\n\n- Installe en quelques commandes : inscription, connexion, déconnexion, mot de passe oublié, profil\n- Génère routes, controllers et vues Blade\n- Idéal pour un site Laravel « classique » (Blade)\n\n```bash\ncomposer require laravel/breeze --dev\nphp artisan breeze:install\nnpm install && npm run dev\nphp artisan migrate\n```\n\n> **Laravel 12** — Les nouveaux projets proposent des starter kits (React, Vue, Livewire) via `laravel new`. Breeze reste installable avec Composer pour apprendre.\n\n### Mots de passe : toujours hachés\n\n- **Jamais** de mot de passe en clair dans la base\n- Le hachage est **à sens unique** : on ne peut pas le « décoder »\n- `Hash::check` compare une saisie avec le hash\n- `Auth::attempt` fait la vérification + ouvre la session\n\n```php\nuse Illuminate\\Support\\Facades\\Hash;\n\n// À l'inscription\n$user->password = Hash::make($mdp);\n// $2y$12$Kq... (bcrypt, irréversible)\n\n// À la connexion (vérification manuelle)\nif (Hash::check($mdpSaisi, $user->password)) {\n    // mot de passe correct\n}\n\n// Le plus simple : Auth::attempt\nif (Auth::attempt(['email' => $email, 'password' => $mdp])) {\n    $request->session()->regenerate();\n    return redirect()->intended('/dashboard');\n}\n```\n\n> **Pourquoi hacher ?** — Si la base fuite, l'attaquant n'obtient pas les mots de passe (que beaucoup réutilisent ailleurs)."
+        },
+        {
+          "title": "Protéger les pages et gérer les utilisateurs",
+          "description": "Le middleware auth, et l'utilisateur connecté partout.",
+          "duration_minutes": 20,
+          "position": 2,
+          "content": "### Protéger, récupérer, déconnecter\n\n- `->middleware('auth')` : non connecté → redirection vers `/login`\n- `Auth::user()` : l'utilisateur connecté, à tout moment\n- `Auth::logout()` + invalider la session\n- `@auth` / `@guest` dans les vues\n\n```php\n// routes/web.php : réservé aux connectés\nRoute::get('/dashboard', [DashboardController::class, 'index'])\n    ->middleware('auth');\n\n// Dans un controller\n$user = Auth::user(); $id = Auth::id();\n// ou $request->user()\n\n// Déconnexion\nAuth::logout();\n$request->session()->invalidate();\n$request->session()->regenerateToken();\n```\n\n```blade\n{{-- Dans une vue --}}\n@auth\n    Bonjour {{ Auth::user()->name }}\n@endauth\n\n@guest\n    <a href=\"{{ route('login') }}\">Connexion</a>\n@endguest\n```"
+        },
+        {
+          "title": "Authentification d'une API : Sanctum",
+          "description": "Pas de session côté React : un jeton à chaque requête.",
+          "duration_minutes": 30,
+          "position": 3,
+          "content": "### Session ou jeton ?\n\n| | Site Blade : session | API (React, mobile) : jeton |\n|---|---|---|\n| Principe | Le navigateur garde un cookie de session | Le client envoie `Authorization: Bearer <jeton>` |\n| Protection | Formulaires protégés par `@csrf` | Sanctum crée et vérifie les jetons |\n| Middleware | `auth` | `auth:sanctum` |\n\n- Installation : `php artisan install:api`\n\n### Application PassQuiz — connexion et déconnexion (EF-02)\n\nIdentifiants valides → jeton ; jeton révoqué à la déconnexion.\n\n- Le model `User` utilise le trait `HasApiTokens`\n- Compte désactivé par l'admin (`actif`) → refus\n- Même message pour e-mail inconnu ou mauvais mot de passe\n- Déconnexion : `currentAccessToken()->delete()` révoque le jeton\n\n```php\n// User.php\nuse Laravel\\Sanctum\\HasApiTokens;\n\nclass User extends Authenticatable { use HasApiTokens; }\n\n// AuthController\npublic function login(Request $request)\n{\n    $data = $request->validate([\n        'email'    => 'required|email',\n        'password' => 'required',\n    ]);\n\n    $user = User::where('email', $data['email'])->first();\n\n    if (! $user || ! Hash::check($data['password'], $user->mot_de_passe)) {\n        return response()->json(['message' => 'Identifiants invalides'], 401);\n    }\n\n    abort_unless($user->actif, 403, 'Compte désactivé.');\n\n    $token = $user->createToken('passquiz')->plainTextToken;\n\n    return response()->json(['user' => $user, 'token' => $token]);\n}\n\npublic function logout(Request $request)\n{\n    $request->user()->currentAccessToken()->delete();\n\n    return response()->noContent();\n}\n```\n\n### À retenir\n\n- Authentification = qui ; autorisation = le droit\n- Breeze : inscription / connexion prêtes\n- `Hash::make` / `Hash::check`, ou `Auth::attempt`\n- `middleware('auth')`, `Auth::user()`, `@auth`\n- API : jetons Sanctum + `auth:sanctum`\n\n### Pièges à éviter\n\n- Stocker un mot de passe en clair\n- Message d'erreur qui révèle si l'e-mail existe\n- Oublier `->middleware('auth')` sur une page privée\n- Déconnexion sans invalider la session / révoquer le jeton\n- Oublier le trait `HasApiTokens` (erreur sur `createToken`)\n\n*Module suivant → les middleware*"
+        }
+      ],
+      "number": 10,
+      "title": "L'authentification",
+      "description": "Inscription, connexion, mots de passe et pages réservées aux utilisateurs connectés.",
+      "quiz": {
+        "title": "Module 10 : L'authentification",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Quelle est la différence entre authentification et autorisation ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "L'authentification identifie l'utilisateur ; l'autorisation vérifie ce qu'il a le droit de faire",
+                "is_correct": true
+              },
+              {
+                "text": "L'authentification ne concerne que les API",
+                "is_correct": false
+              },
+              {
+                "text": "Aucune",
+                "is_correct": false
+              },
+              {
+                "text": "L'autorisation se fait avant l'authentification",
+                "is_correct": false
+              }
+            ],
+            "explanation": "On sait d'abord qui est l'utilisateur, puis on vérifie ses droits."
+          },
+          {
+            "text": "Que fait `Hash::make($mdp)` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Chiffre le mot de passe de façon réversible",
+                "is_correct": false
+              },
+              {
+                "text": "Envoie le mot de passe par e-mail",
+                "is_correct": false
+              },
+              {
+                "text": "Produit un hash irréversible (bcrypt) à stocker en base",
+                "is_correct": true
+              },
+              {
+                "text": "Vérifie le mot de passe",
+                "is_correct": false
+              }
+            ],
+            "explanation": "On ne peut pas retrouver le mot de passe à partir du hash. On vérifie une saisie avec `Hash::check`."
+          },
+          {
+            "text": "On peut stocker les mots de passe en clair si la base de données est protégée.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. ENF-01 impose le hachage (bcrypt). En cas de fuite, les mots de passe ne doivent pas être lisibles."
+          },
+          {
+            "text": "Que fait `Auth::attempt(['email' => $e, 'password' => $p])` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Envoie un lien de réinitialisation",
+                "is_correct": false
+              },
+              {
+                "text": "Crée un compte",
+                "is_correct": false
+              },
+              {
+                "text": "Supprime la session",
+                "is_correct": false
+              },
+              {
+                "text": "Vérifie les identifiants et, s'ils sont corrects, connecte l'utilisateur",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Il renvoie `true` ou `false`. Le mot de passe saisi est comparé au hash."
+          },
+          {
+            "text": "Un visiteur non connecté ouvre une route avec `->middleware('auth')`. Que se passe-t-il (site web) ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Il est connecté automatiquement",
+                "is_correct": false
+              },
+              {
+                "text": "Il est redirigé vers la page de connexion",
+                "is_correct": true
+              },
+              {
+                "text": "La page s'affiche",
+                "is_correct": false
+              },
+              {
+                "text": "Erreur 500",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Pour une requête d'API, Laravel répond 401 à la place."
+          },
+          {
+            "text": "Comment récupérer l'utilisateur connecté dans un controller ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`User::current()`",
+                "is_correct": false
+              },
+              {
+                "text": "`auth()->user()`",
+                "is_correct": true
+              },
+              {
+                "text": "`$request->user()`",
+                "is_correct": true
+              },
+              {
+                "text": "`Auth::user()`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`User::current()` n'existe pas."
+          },
+          {
+            "text": "Quelles directives Blade affichent un bloc selon que l'utilisateur est connecté ou non ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`@auth` / `@guest`",
+                "is_correct": true
+              },
+              {
+                "text": "`@login` / `@logout`",
+                "is_correct": false
+              },
+              {
+                "text": "`@if(auth)`",
+                "is_correct": false
+              },
+              {
+                "text": "`@user` / `@visitor`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`@auth … @endauth` et `@guest … @endguest`."
+          },
+          {
+            "text": "Pour une API consommée par React, comment le client prouve-t-il qui il est ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Avec son adresse IP",
+                "is_correct": false
+              },
+              {
+                "text": "Avec `@csrf`",
+                "is_correct": false
+              },
+              {
+                "text": "Avec un cookie de thème",
+                "is_correct": false
+              },
+              {
+                "text": "Avec l'en-tête `Authorization: Bearer <jeton>` délivré par Sanctum",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Les routes sont protégées par `auth:sanctum`, qui vérifie ce jeton."
+          },
+          {
+            "text": "Dans PassQuiz, comment révoquer le jeton à la déconnexion (EF-02) ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`Auth::logout()`",
+                "is_correct": false
+              },
+              {
+                "text": "Supprimer l'utilisateur",
+                "is_correct": false
+              },
+              {
+                "text": "`$request->user()->currentAccessToken()->delete()`",
+                "is_correct": true
+              },
+              {
+                "text": "Vider le localStorage côté React suffit",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le jeton est supprimé en base : même copié, il ne fonctionne plus. Vider le localStorage seul laisserait le jeton valide."
+          },
+          {
+            "text": "À la connexion, il vaut mieux répondre « Identifiants invalides » plutôt que « Cet e-mail n'existe pas ».",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. Un message différent permettrait de deviner quels e-mails ont un compte."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": null,
+      "courses": [
+        {
+          "title": "Le rôle d'un middleware",
+          "description": "Un filtre placé entre la requête et le controller.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Un filtre entre la requête et le controller\n\n- Un **middleware** s'exécute **avant** (ou après) l'action du controller\n- Il peut **laisser passer** la requête, ou la **refuser** (redirection, erreur 401, 403, 429…)\n- Plusieurs middleware s'enchaînent : chacun passe la main au suivant\n\n```text\nNavigateur\n   │  GET /dashboard\n   ▼\nMiddleware auth      ← connecté ?      non → /login\n   │\n   ▼\nMiddleware role      ← bon rôle ?      non → 403\n   │\n   ▼\nController           ← l'action s'exécute\n```\n\n> **Analogie** — Le middleware est le contrôleur à l'entrée d'une salle : il vérifie le billet avant de laisser entrer. Le controller, lui, s'occupe du spectacle.\n\n### Les middleware fournis par Laravel\n\n| Middleware | Rôle |\n|---|---|\n| `auth` | Connecté obligatoire (sinon redirection vers `/login`, ou erreur 401 pour une API) |\n| `auth:sanctum` | Jeton Sanctum valide obligatoire (API, module 10) |\n| `guest` | Réservé aux visiteurs **non** connectés (pages de connexion, d'inscription) |\n| `verified` | Adresse e-mail vérifiée obligatoire |\n| `throttle:10,1` | Au plus 10 requêtes par minute, sinon erreur **429** |\n\n### Appliquer un middleware\n\n```php\n// Sur une route\nRoute::get('/dashboard', [DashboardController::class, 'index'])\n    ->middleware('auth');\n\n// Sur un groupe (module 2)\nRoute::middleware('auth')->group(function () {\n    Route::get('/profil', [ProfilController::class, 'edit']);\n    Route::put('/profil', [ProfilController::class, 'update']);\n});\n\n// Plusieurs middleware à la suite\nRoute::middleware(['auth', 'verified'])->group(function () {\n    // ...\n});\n```"
+        },
+        {
+          "title": "Créer son propre middleware",
+          "description": "Écrire une règle une fois, l'appliquer partout.",
+          "duration_minutes": 25,
+          "position": 2,
+          "content": "### Générer et écrire la méthode handle()\n\n- `php artisan make:middleware EnsureUserIsActive`\n- Fichier généré dans `app/Http/Middleware/`\n- `handle()` reçoit la requête et `$next`\n- `return $next($request);` : **laisse passer** vers la suite (middleware suivant, puis controller)\n- `abort(403)` ou `redirect()` : **arrête** la requête\n\n```php\n<?php\n\nnamespace App\\Http\\Middleware;\n\nuse Closure;\nuse Illuminate\\Http\\Request;\nuse Symfony\\Component\\HttpFoundation\\Response;\n\nclass EnsureUserIsActive\n{\n    public function handle(Request $request, Closure $next): Response\n    {\n        if (! $request->user()?->actif) {\n            abort(403, 'Compte désactivé.');\n        }\n\n        return $next($request); // on laisse passer\n    }\n}\n```\n\n### Déclarer un alias (Laravel 11 et 12)\n\n- Les middleware se déclarent dans `bootstrap/app.php`\n- Un **alias** donne un nom court, utilisable dans les routes\n- L'ancien fichier `app/Http/Kernel.php` n'existe plus depuis Laravel 11\n\n```php\n// bootstrap/app.php\n->withMiddleware(function (Middleware $middleware) {\n    $middleware->alias([\n        'actif' => \\App\\Http\\Middleware\\EnsureUserIsActive::class,\n    ]);\n})\n\n// routes/web.php\nRoute::middleware(['auth', 'actif'])->group(function () {\n    // ...\n});\n```\n\n### Avant ou après le controller\n\n```php\npublic function handle(Request $request, Closure $next): Response\n{\n    // AVANT : on peut refuser la requête ici\n\n    $response = $next($request); // le controller s'exécute\n\n    // APRÈS : on peut modifier la réponse ici\n    $response->headers->set('X-App', 'PassQuiz');\n\n    return $response;\n}\n```"
+        },
+        {
+          "title": "Paramètres, rôles et limitation de débit",
+          "description": "Un middleware réutilisable pour chaque rôle, et des routes protégées des abus.",
+          "duration_minutes": 25,
+          "position": 3,
+          "content": "### Un middleware avec des paramètres\n\n- Les paramètres s'écrivent après `:`, séparés par des virgules : `role:admin,formateur`\n- Ils arrivent dans `handle()` après `$next`\n- `string ...$roles` les récupère sous forme de tableau : `['admin', 'formateur']`\n\n```php\n// app/Http/Middleware/EnsureUserHasRole.php\npublic function handle(Request $request, Closure $next, string ...$roles): Response\n{\n    if (! in_array($request->user()?->role, $roles, true)) {\n        abort(403, 'Accès refusé.');\n    }\n\n    return $next($request);\n}\n\n// bootstrap/app.php\n$middleware->alias([\n    'role' => \\App\\Http\\Middleware\\EnsureUserHasRole::class,\n]);\n```\n\n> **401 ou 403 ?** — 401 : on ne sait pas qui vous êtes (pas connecté). 403 : on sait qui vous êtes, mais vous n'avez pas le droit.\n\n### Limiter le débit : throttle\n\n- `throttle:10,1` : **10** requêtes par **1** minute et par utilisateur\n- Au-delà : erreur **429 Too Many Requests**\n- Protège contre les scripts qui envoient des centaines de requêtes\n\n```php\nRoute::post('/login', [AuthController::class, 'login'])\n    ->middleware('throttle:5,1'); // 5 essais par minute\n```\n\n### Application PassQuiz — rôles et routes de quiz (ENF-02, section 11)\n\nLe middleware `role` annoncé au module 2, et la limitation de débit des quiz.\n\n- Groupe admin : `auth:sanctum` puis `role:admin,formateur`\n- Un apprenant qui appelle `/api/admin/...` reçoit une erreur **403**\n- Routes de quiz limitées (section 11 : « limitation de débit sur les routes de quiz »)\n\n```php\n// routes/api.php\nRoute::middleware('auth:sanctum')->group(function () {\n\n    Route::middleware('throttle:30,1')->group(function () {\n        Route::post('/quiz/{quiz}/demarrer', [TentativeController::class, 'demarrer']);\n        Route::post('/tentatives/{tentative}/soumettre', [TentativeController::class, 'soumettre']);\n    });\n\n    Route::prefix('admin')->name('admin.')\n        ->middleware('role:admin,formateur')\n        ->group(function () {\n            Route::apiResource('formations', Admin\\FormationController::class);\n        });\n});\n```\n\n### À retenir\n\n- Middleware = filtre **avant** (ou après) le controller\n- `return $next($request)` laisse passer ; `abort()` arrête\n- `make:middleware`, alias dans `bootstrap/app.php`\n- Paramètres : `role:admin,formateur` → `string ...$roles`\n- `auth`, `auth:sanctum`, `guest`, `throttle`\n\n### Pièges à éviter\n\n- Oublier `return $next($request);` : la page ne s'affiche jamais\n- Chercher `app/Http/Kernel.php` dans un projet Laravel 11 ou 12\n- Mettre `role` avant `auth` : `$request->user()` est encore `null`\n- Renvoyer 401 à un utilisateur connecté qui n'a pas le droit (c'est 403)\n- Laisser les routes de connexion et de quiz sans `throttle`\n\n*Module suivant → l'autorisation : Gates et Policies*"
+        }
+      ],
+      "number": 11,
+      "title": "Les middleware",
+      "description": "Filtrer les requêtes avant qu'elles n'atteignent le controller : connexion, rôles, limitation de débit.",
+      "quiz": {
+        "title": "Module 11 : Les middleware",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Qu'est-ce qu'un middleware ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Une table intermédiaire entre deux models",
+                "is_correct": false
+              },
+              {
+                "text": "Un filtre exécuté avant (ou après) l'action du controller, qui peut laisser passer ou refuser la requête",
+                "is_correct": true
+              },
+              {
+                "text": "Une vue Blade partagée",
+                "is_correct": false
+              },
+              {
+                "text": "Une commande Artisan",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le middleware se place entre la requête et le controller : `auth` vérifie la connexion, `role` le rôle, `throttle` le débit."
+          },
+          {
+            "text": "Sur un site Blade, que fait le middleware `auth` quand le visiteur n'est pas connecté ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Il affiche la page quand même",
+                "is_correct": false
+              },
+              {
+                "text": "Il crée un compte automatiquement",
+                "is_correct": false
+              },
+              {
+                "text": "Il redirige vers la page de connexion",
+                "is_correct": true
+              },
+              {
+                "text": "Il renvoie une erreur 500",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Pour une API, il renvoie à la place une erreur 401 (non authentifié)."
+          },
+          {
+            "text": "Quelle commande crée un middleware ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`php artisan middleware:create EnsureUserHasRole`",
+                "is_correct": false
+              },
+              {
+                "text": "`composer make:middleware EnsureUserHasRole`",
+                "is_correct": false
+              },
+              {
+                "text": "`php artisan make:filter EnsureUserHasRole`",
+                "is_correct": false
+              },
+              {
+                "text": "`php artisan make:middleware EnsureUserHasRole`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Le fichier est généré dans `app/Http/Middleware/`, avec une méthode `handle()` à compléter."
+          },
+          {
+            "text": "Dans la méthode `handle()`, que fait `return $next($request);` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Il laisse passer la requête vers la suite (middleware suivant, puis controller)",
+                "is_correct": true
+              },
+              {
+                "text": "Il annule la requête",
+                "is_correct": false
+              },
+              {
+                "text": "Il redirige vers la page suivante du site",
+                "is_correct": false
+              },
+              {
+                "text": "Il recharge la page",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Sans cette ligne, la requête n'atteint jamais le controller. Pour refuser, on utilise `abort(403)` ou une redirection."
+          },
+          {
+            "text": "Depuis Laravel 11, où déclare-t-on l'alias d'un middleware (par exemple `role`) ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Dans `app/Http/Kernel.php`",
+                "is_correct": false
+              },
+              {
+                "text": "Dans `bootstrap/app.php`, avec `$middleware->alias([...])`",
+                "is_correct": true
+              },
+              {
+                "text": "Dans le fichier `.env`",
+                "is_correct": false
+              },
+              {
+                "text": "Dans `config/database.php`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le fichier `Kernel.php` a disparu avec Laravel 11 : la configuration des middleware se fait dans `bootstrap/app.php`."
+          },
+          {
+            "text": "Quelles écritures appliquent bien un middleware ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`Route::get('/dashboard', ...)->middleware('auth')`",
+                "is_correct": true
+              },
+              {
+                "text": "`Route::middleware('auth')->group(function () { ... })`",
+                "is_correct": true
+              },
+              {
+                "text": "`Route::get('/dashboard', ...)->auth()`",
+                "is_correct": false
+              },
+              {
+                "text": "`Route::middleware(['auth', 'role:admin'])->group(function () { ... })`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "On applique un middleware avec `middleware()`, sur une route ou sur un groupe, éventuellement avec un tableau de plusieurs middleware."
+          },
+          {
+            "text": "Avec `->middleware('role:admin,formateur')`, que reçoit `handle(Request $request, Closure $next, string ...$roles)` dans `$roles` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "La chaîne `'admin,formateur'`",
+                "is_correct": false
+              },
+              {
+                "text": "Le rôle de l'utilisateur connecté",
+                "is_correct": false
+              },
+              {
+                "text": "Le tableau `['admin', 'formateur']`",
+                "is_correct": true
+              },
+              {
+                "text": "Rien : un middleware ne reçoit pas de paramètres",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les paramètres écrits après `:` et séparés par des virgules arrivent après `$next` ; `...$roles` les regroupe dans un tableau."
+          },
+          {
+            "text": "`->middleware('throttle:10,1')` autorise 10 requêtes par minute ; au-delà, Laravel renvoie une erreur 429.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. 429 signifie « Too Many Requests » : c'est la limitation de débit."
+          },
+          {
+            "text": "Un apprenant connecté appelle `/api/admin/formations`, protégé par `role:admin,formateur`. Que reçoit-il ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Une erreur 401 : il n'est pas connecté",
+                "is_correct": false
+              },
+              {
+                "text": "La liste des formations",
+                "is_correct": false
+              },
+              {
+                "text": "Une erreur 419",
+                "is_correct": false
+              },
+              {
+                "text": "Une erreur 403 : il est connecté, mais n'a pas le droit",
+                "is_correct": true
+              }
+            ],
+            "explanation": "401 : on ne sait pas qui vous êtes. 403 : on sait qui vous êtes, mais vous n'avez pas l'autorisation (ENF-02)."
+          },
+          {
+            "text": "Dans PassQuiz, pourquoi applique-t-on `throttle` aux routes de quiz (section 11) ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Pour corriger les quiz plus vite",
+                "is_correct": false
+              },
+              {
+                "text": "Pour empêcher un script d'envoyer des centaines de requêtes de démarrage ou de soumission",
+                "is_correct": true
+              },
+              {
+                "text": "Pour mélanger l'ordre des questions",
+                "is_correct": false
+              },
+              {
+                "text": "Pour chronométrer la tentative",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Section 11 : « limitation de débit sur les routes de quiz ». Le mélange et le chronomètre sont gérés ailleurs, côté serveur."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": null,
+      "courses": [
+        {
+          "title": "Les Gates",
+          "description": "Une règle d'autorisation, écrite une seule fois.",
+          "duration_minutes": 20,
+          "position": 1,
+          "content": "### Middleware ou autorisation fine ?\n\n- Le **middleware** `role` (module 11) contrôle l'accès à **tout un groupe** de routes\n- Mais « ce formateur peut-il modifier **cette** formation ? » dépend de la **ressource**\n- Les **Gates** et les **Policies** répondent à cette question\n\n> **Rappel** — Authentification : QUI es-tu ? Autorisation : AS-TU LE DROIT ? (module 10)\n\n### Définir une Gate\n\n- Une **Gate** est une règle nommée : une fonction qui renvoie `true` ou `false`\n- On la définit dans `AppServiceProvider`, méthode `boot()`\n- Le premier paramètre est **toujours** l'utilisateur connecté\n\n```php\n// app/Providers/AppServiceProvider.php\nuse Illuminate\\Support\\Facades\\Gate;\n\npublic function boot(): void\n{\n    Gate::define('voir-statistiques', function (User $user) {\n        return $user->role === 'admin';\n    });\n\n    Gate::define('modifier-post', function (User $user, Post $post) {\n        return $user->id === $post->user_id;\n    });\n}\n```\n\n### Utiliser une Gate\n\n| Écriture | Résultat |\n|---|---|\n| `Gate::allows('modifier-post', $post)` | `true` si autorisé |\n| `Gate::denies('modifier-post', $post)` | `true` si refusé |\n| `Gate::authorize('modifier-post', $post)` | Erreur **403** si refusé |\n| `@can('modifier-post', $post)` … `@endcan` | Bloc affiché seulement si autorisé |\n\n```php\npublic function edit(Post $post)\n{\n    Gate::authorize('modifier-post', $post); // 403 sinon\n\n    return view('posts.edit', compact('post'));\n}\n```\n\n```blade\n@can('modifier-post', $post)\n    <a href=\"{{ route('posts.edit', $post) }}\">Modifier</a>\n@endcan\n```"
+        },
+        {
+          "title": "Les Policies",
+          "description": "Toutes les règles d'une ressource, rangées dans une classe.",
+          "duration_minutes": 25,
+          "position": 2,
+          "content": "### Créer une Policy\n\n- Une **Policy** regroupe les règles d'**un model** : une méthode par action\n- `php artisan make:policy PostPolicy --model=Post`\n- Fichier généré dans `app/Policies/`\n- Laravel trouve la Policy **tout seul** : `Post` → `PostPolicy`\n\n```php\n// app/Policies/PostPolicy.php\nclass PostPolicy\n{\n    public function update(User $user, Post $post): bool\n    {\n        return $user->id === $post->user_id;\n    }\n\n    public function delete(User $user, Post $post): bool\n    {\n        return $user->id === $post->user_id;\n    }\n}\n```\n\n### Utiliser une Policy\n\n- Même écriture qu'une Gate : le **nom de la méthode** et le **model**\n- `Gate::authorize('update', $post)` appelle `PostPolicy::update`\n- Dans une vue : `@can('update', $post)`\n\n```php\n// PostController\npublic function update(Request $request, Post $post)\n{\n    Gate::authorize('update', $post); // 403 si ce n'est pas son article\n\n    $post->update($request->validate(['title' => 'required|max:255']));\n\n    return redirect()->route('posts.show', $post);\n}\n```\n\n```blade\n@can('delete', $post)\n    <form method=\"POST\" action=\"{{ route('posts.destroy', $post) }}\">\n        @csrf @method('DELETE')\n        <button>Supprimer</button>\n    </form>\n@endcan\n```\n\n### before() : l'administrateur a tous les droits\n\n- `before()` est appelée **avant** chaque méthode de la Policy\n- `true` : autorisé sans regarder la suite ; `null` : on continue normalement\n\n```php\npublic function before(User $user, string $ability): ?bool\n{\n    return $user->role === 'admin' ? true : null;\n}\n```\n\n> **Gate ou Policy ?** — Gate : une règle isolée (« voir les statistiques »). Policy : les règles d'un model (voir, modifier, supprimer un `Post`)."
+        },
+        {
+          "title": "Application PassQuiz : qui gère quoi ?",
+          "description": "Les rôles du cahier des charges, traduits en Policies.",
+          "duration_minutes": 25,
+          "position": 3,
+          "content": "### Les règles des sections 4.1 et 4.2\n\n- Le **formateur** gère **ses** formations, modules, cours et quiz (`formateur_id`)\n- L'**administrateur** gère tout, et il est le seul à **publier** une formation\n- L'**apprenant** ne télécharge que **ses** certificats\n\n### La FormationPolicy\n\n```php\n// php artisan make:policy FormationPolicy --model=Formation\nclass FormationPolicy\n{\n    public function before(User $user, string $ability): ?bool\n    {\n        return $user->role === 'admin' ? true : null;\n    }\n\n    public function update(User $user, Formation $formation): bool\n    {\n        return $user->role === 'formateur'\n            && $formation->formateur_id === $user->id;\n    }\n\n    public function delete(User $user, Formation $formation): bool\n    {\n        return $this->update($user, $formation);\n    }\n\n    public function publier(User $user, Formation $formation): bool\n    {\n        return false; // seul l'admin publie (géré par before)\n    }\n}\n```\n\n### Dans le controller de l'API\n\n```php\n// Admin\\FormationController\npublic function store(Request $request)\n{\n    $data = $request->validate([\n        'titre'       => 'required|max:255',\n        'description' => 'nullable',\n    ]);\n\n    $formation = Formation::create([\n        ...$data,\n        'formateur_id' => $request->user()->id,\n        'statut'       => 'brouillon', // l'admin publiera\n    ]);\n\n    return response()->json($formation, 201);\n}\n\npublic function update(Request $request, Formation $formation)\n{\n    Gate::authorize('update', $formation); // 403 si ce n'est pas la sienne\n\n    $formation->update($request->validate(['titre' => 'required|max:255']));\n\n    return response()->json($formation);\n}\n\npublic function publier(Formation $formation)\n{\n    Gate::authorize('publier', $formation);\n\n    $formation->update(['statut' => 'publie']);\n\n    return response()->json($formation);\n}\n```\n\n- La route admin est déjà filtrée par `role:admin,formateur` (module 11)\n- La Policy ajoute la règle fine : **sa** formation\n- La liste aussi est filtrée : `Formation::where('formateur_id', $user->id)` pour un formateur\n\n### À retenir\n\n- Middleware : accès à un groupe de routes ; Gate / Policy : droit sur **une** ressource\n- `Gate::define` dans `AppServiceProvider` ; Policy = une classe par model\n- `Gate::allows`, `Gate::denies`, `Gate::authorize` (403), `@can`\n- `make:policy … --model=…`, découverte automatique\n- `before()` : donner tous les droits à l'admin\n\n### Pièges à éviter\n\n- Vérifier le droit seulement dans la vue (`@can`) : l'API reste ouverte\n- Oublier `Gate::authorize` dans `update` ou `destroy`\n- Comparer des identifiants de types différents (`'3' === 3` est faux)\n- `before()` qui renvoie `false` au lieu de `null` : plus personne n'a de droit\n- Se fier au `formateur_id` envoyé par le client au lieu de `$request->user()->id`\n\n*Fin du programme des modules : place à l'évaluation finale.*"
+        }
+      ],
+      "number": 12,
+      "title": "L'autorisation : Gates et Policies",
+      "description": "Décider qui a le droit de faire quoi, ressource par ressource.",
+      "quiz": {
+        "title": "Module 12 : L'autorisation : Gates et Policies",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Quelle question l'autorisation pose-t-elle ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Qui es-tu ?",
+                "is_correct": false
+              },
+              {
+                "text": "As-tu le droit de faire cette action ?",
+                "is_correct": true
+              },
+              {
+                "text": "Ton mot de passe est-il assez fort ?",
+                "is_correct": false
+              },
+              {
+                "text": "Ton jeton est-il encore valide ?",
+                "is_correct": false
+              }
+            ],
+            "explanation": "« Qui es-tu ? » relève de l'authentification (module 10). L'autorisation décide si l'utilisateur identifié a le droit d'agir."
+          },
+          {
+            "text": "Où définit-on une Gate avec `Gate::define(...)` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Dans `routes/web.php`",
+                "is_correct": false
+              },
+              {
+                "text": "Dans le model `User`",
+                "is_correct": false
+              },
+              {
+                "text": "Dans la méthode `boot()` de `AppServiceProvider`",
+                "is_correct": true
+              },
+              {
+                "text": "Dans le fichier `.env`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "La Gate est enregistrée au démarrage de l'application, puis utilisable partout."
+          },
+          {
+            "text": "Que fait `Gate::authorize('update', $post)` si l'utilisateur n'a pas le droit ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Il déclenche une erreur 403",
+                "is_correct": true
+              },
+              {
+                "text": "Il renvoie `false`",
+                "is_correct": false
+              },
+              {
+                "text": "Il redirige vers `/login`",
+                "is_correct": false
+              },
+              {
+                "text": "Il supprime l'article",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`Gate::allows` et `Gate::denies` renvoient un booléen ; `Gate::authorize` arrête directement la requête avec une erreur 403."
+          },
+          {
+            "text": "Quelle commande crée une Policy pour le model `Post` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`php artisan make:gate PostPolicy`",
+                "is_correct": false
+              },
+              {
+                "text": "`php artisan make:middleware PostPolicy`",
+                "is_correct": false
+              },
+              {
+                "text": "`php artisan policy:create Post`",
+                "is_correct": false
+              },
+              {
+                "text": "`php artisan make:policy PostPolicy --model=Post`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`--model=Post` génère les méthodes `view`, `update`, `delete`… typées avec `Post $post`."
+          },
+          {
+            "text": "Quelles affirmations sur les Policies sont vraies ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Une Policy regroupe les règles d'un model, avec une méthode par action",
+                "is_correct": true
+              },
+              {
+                "text": "Laravel associe automatiquement `PostPolicy` au model `Post`",
+                "is_correct": true
+              },
+              {
+                "text": "Une Policy remplace la validation des formulaires",
+                "is_correct": false
+              },
+              {
+                "text": "Le premier paramètre de chaque méthode est l'utilisateur connecté",
+                "is_correct": true
+              }
+            ],
+            "explanation": "La validation vérifie les données envoyées (module 8) ; la Policy vérifie le droit d'agir sur la ressource."
+          },
+          {
+            "text": "Dans une vue Blade, comment afficher le bouton « Modifier » seulement si l'utilisateur a le droit ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`@auth('update', $post)` … `@endauth`",
+                "is_correct": false
+              },
+              {
+                "text": "`@can('update', $post)` … `@endcan`",
+                "is_correct": true
+              },
+              {
+                "text": "`@if(Gate::define('update'))` … `@endif`",
+                "is_correct": false
+              },
+              {
+                "text": "`@policy('update')` … `@endpolicy`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`@can` interroge la même Gate ou Policy que le controller."
+          },
+          {
+            "text": "Cacher le bouton « Supprimer » avec `@can` suffit à protéger la suppression.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. N'importe qui peut envoyer la requête DELETE lui-même : il faut aussi appeler `Gate::authorize` dans le controller."
+          },
+          {
+            "text": "Que doit renvoyer `before()` pour laisser les autres méthodes de la Policy décider ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`false`",
+                "is_correct": false
+              },
+              {
+                "text": "`true`",
+                "is_correct": false
+              },
+              {
+                "text": "`null`",
+                "is_correct": true
+              },
+              {
+                "text": "Une erreur 403",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`true` autorise tout, `false` refuse tout ; `null` signifie « je ne décide pas, continuez »."
+          },
+          {
+            "text": "Le middleware `role:admin,formateur` protège déjà les routes admin. Pourquoi ajouter une Policy sur `Formation` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Pour accélérer les requêtes",
+                "is_correct": false
+              },
+              {
+                "text": "Pour remplacer Sanctum",
+                "is_correct": false
+              },
+              {
+                "text": "Parce que le middleware ne fonctionne pas avec une API",
+                "is_correct": false
+              },
+              {
+                "text": "Pour qu'un formateur ne puisse modifier que **ses** formations, pas celles des autres",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Le middleware filtre par rôle ; la Policy vérifie le droit sur une formation précise (`formateur_id`)."
+          },
+          {
+            "text": "Dans PassQuiz, qui peut publier une formation (section 4.1) ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Le formateur qui l'a créée",
+                "is_correct": false
+              },
+              {
+                "text": "Tout utilisateur connecté",
+                "is_correct": false
+              },
+              {
+                "text": "Seulement l'administrateur",
+                "is_correct": true
+              },
+              {
+                "text": "L'apprenant inscrit",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le formateur crée sa formation en brouillon ; l'administrateur la valide et la publie (EF-05)."
+          }
+        ]
+      }
+    }
+  ],
+  "final_quiz": {
+    "title": "Évaluation finale Laravel",
+    "passing_score": 70,
+    "time_limit_minutes": 30,
+    "max_attempts": 3,
+    "retry_delay_minutes": 1440,
+    "questions": [
+      {
+        "text": "Dans le trajet MVC vu en cours, qui décide quel controller répond à une URL ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Le Model",
+            "is_correct": false
+          },
+          {
+            "text": "La route",
+            "is_correct": true
+          },
+          {
+            "text": "La vue Blade",
+            "is_correct": false
+          },
+          {
+            "text": "Le fichier `.env`",
+            "is_correct": false
+          }
+        ],
+        "explanation": "La route (`routes/web.php` ou `routes/api.php`) associe l'adresse demandée à la méthode du controller qui répond (module 1)."
+      },
+      {
+        "text": "Quels réglages trouve-t-on dans le fichier `.env` ?",
+        "type": "multiple",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Les accès à la base de données (`DB_DATABASE`, `DB_USERNAME`…)",
+            "is_correct": true
+          },
+          {
+            "text": "Le mode debug (`APP_DEBUG`)",
+            "is_correct": true
+          },
+          {
+            "text": "La liste des routes de l'application",
+            "is_correct": false
+          },
+          {
+            "text": "L'adresse de l'application (`APP_URL`)",
+            "is_correct": true
+          }
+        ],
+        "explanation": "`.env` contient les réglages propres à chaque machine. Les routes sont déclarées dans le dossier `routes/` (modules 1 et 5)."
+      },
+      {
+        "text": "Quelle est l'adresse et le nom de cette route ?\n\n```php\nRoute::prefix('admin')->name('admin.')->group(function () {\n    Route::get('/users', ...)->name('users');\n});\n```",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`/users` et `users`",
+            "is_correct": false
+          },
+          {
+            "text": "`/admin/users` et `users`",
+            "is_correct": false
+          },
+          {
+            "text": "`/admin/users` et `admin.users`",
+            "is_correct": true
+          },
+          {
+            "text": "`/users` et `admin.users`",
+            "is_correct": false
+          }
+        ],
+        "explanation": "Le groupe ajoute son préfixe au début de l'URL et son nom au début du nom de chaque route (module 2)."
+      },
+      {
+        "text": "Quelles routes sont créées par `Route::apiResource('posts', PostController::class)` ?",
+        "type": "multiple",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`GET /posts` (index)",
+            "is_correct": true
+          },
+          {
+            "text": "`GET /posts/create` (create)",
+            "is_correct": false
+          },
+          {
+            "text": "`POST /posts` (store)",
+            "is_correct": true
+          },
+          {
+            "text": "`DELETE /posts/{id}` (destroy)",
+            "is_correct": true
+          }
+        ],
+        "explanation": "`apiResource` crée 5 routes : il retire `create` et `edit`, qui affichent des formulaires HTML (module 2)."
+      },
+      {
+        "text": "Pourquoi le Route Model Binding ne fonctionne-t-il pas ici ?\n\n```php\n// Route::get('/posts/{id}', [PostController::class, 'show']);\npublic function show(Post $post)\n{\n    return view('posts.show', compact('post'));\n}\n```",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Il manque un appel à `findOrFail`",
+            "is_correct": false
+          },
+          {
+            "text": "La méthode doit s'appeler `index`",
+            "is_correct": false
+          },
+          {
+            "text": "Il faut écrire `show(int $post)`",
+            "is_correct": false
+          },
+          {
+            "text": "Le paramètre de route `{id}` ne porte pas le même nom que `$post`",
+            "is_correct": true
+          }
+        ],
+        "explanation": "Laravel relie `{post}` à `$post`. Avec `{id}`, il ne sait pas quel modèle charger : il faut renommer le paramètre en `{post}` (module 3)."
+      },
+      {
+        "text": "Quelle commande génère un controller d'API dont les méthodes reçoivent `Formation $formation` ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`php artisan make:controller FormationController -r`",
+            "is_correct": false
+          },
+          {
+            "text": "`php artisan make:model Formation --api`",
+            "is_correct": false
+          },
+          {
+            "text": "`php artisan make:controller FormationController --api --model=Formation`",
+            "is_correct": true
+          },
+          {
+            "text": "`php artisan make:controller FormationController --view`",
+            "is_correct": false
+          }
+        ],
+        "explanation": "`--api` donne les 5 méthodes sans `create` ni `edit`, et `--model=Formation` les type pour le Route Model Binding (module 3)."
+      },
+      {
+        "text": "Un utilisateur a écrit `<script>alert('x')</script>` dans `$commentaire`. Que se passe-t-il avec cette vue ?\n\n```blade\n<p>{{ $commentaire }}</p>\n```",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Le texte s'affiche tel quel : le script n'est pas exécuté",
+            "is_correct": true
+          },
+          {
+            "text": "Le script s'exécute chez tous les visiteurs",
+            "is_correct": false
+          },
+          {
+            "text": "Laravel supprime le commentaire",
+            "is_correct": false
+          },
+          {
+            "text": "Laravel renvoie une erreur 419",
+            "is_correct": false
+          }
+        ],
+        "explanation": "`{{ }}` neutralise le HTML et protège contre les failles XSS. Avec `{!! !!}`, le script serait exécuté (module 4)."
+      },
+      {
+        "text": "`@extends` doit être la première ligne de la vue qui hérite d'un layout.",
+        "type": "true_false",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Vrai",
+            "is_correct": true
+          },
+          {
+            "text": "Faux",
+            "is_correct": false
+          }
+        ],
+        "explanation": "Vrai. C'est l'un des pièges du module 4 : la vue déclare d'abord son layout, puis remplit ses `@section`."
+      },
+      {
+        "text": "Dans la table `quiz`, la colonne `formation_id` est créée avec `->constrained()->cascadeOnDelete()`. Que se passe-t-il quand on supprime une formation ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "La suppression est refusée tant qu'il reste des quiz",
+            "is_correct": false
+          },
+          {
+            "text": "Ses quiz sont supprimés automatiquement avec elle",
+            "is_correct": true
+          },
+          {
+            "text": "Ses quiz restent, avec `formation_id` à `null`",
+            "is_correct": false
+          },
+          {
+            "text": "Toute la table `quiz` est vidée",
+            "is_correct": false
+          }
+        ],
+        "explanation": "`cascadeOnDelete()` supprime les lignes liées en même temps que le parent (module 5)."
+      },
+      {
+        "text": "Si `php artisan migrate` affiche « Unknown database », c'est que la base indiquée dans `.env` n'existe pas encore.",
+        "type": "true_false",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Vrai",
+            "is_correct": true
+          },
+          {
+            "text": "Faux",
+            "is_correct": false
+          }
+        ],
+        "explanation": "Vrai. Les migrations créent les tables, pas la base : il faut d'abord la créer (par exemple dans phpMyAdmin), module 5."
+      },
+      {
+        "text": "Que renvoie `Post::where('active', 1)->count()` ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Une collection de Posts",
+            "is_correct": false
+          },
+          {
+            "text": "Le premier Post actif",
+            "is_correct": false
+          },
+          {
+            "text": "Le nombre d'articles actifs",
+            "is_correct": true
+          },
+          {
+            "text": "`true` s'il existe au moins un article actif",
+            "is_correct": false
+          }
+        ],
+        "explanation": "`count()` exécute la requête et renvoie un entier ; `get()` renverrait la collection (module 6)."
+      },
+      {
+        "text": "Combien de requêtes ce code exécute-t-il pour 10 formations ?\n\n```php\n$formations = Formation::all();\nforeach ($formations as $formation) {\n    echo $formation->modules->count();\n}\n```",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "1",
+            "is_correct": false
+          },
+          {
+            "text": "2",
+            "is_correct": false
+          },
+          {
+            "text": "10",
+            "is_correct": false
+          },
+          {
+            "text": "11",
+            "is_correct": true
+          }
+        ],
+        "explanation": "1 requête pour la liste, puis 1 par formation : c'est le problème N+1. Avec `Formation::with('modules')->get()`, il n'y en a plus que 2 (module 7)."
+      },
+      {
+        "text": "Quelle instruction ajoute les tags 1 et 3 à un article, sans retirer ceux qu'il a déjà ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`$post->tags()->attach([1, 3])`",
+            "is_correct": true
+          },
+          {
+            "text": "`$post->tags()->sync([1, 3])`",
+            "is_correct": false
+          },
+          {
+            "text": "`$post->tags()->detach([1, 3])`",
+            "is_correct": false
+          },
+          {
+            "text": "`$post->tags = [1, 3]`",
+            "is_correct": false
+          }
+        ],
+        "explanation": "`attach` ajoute des lignes dans la table pivot ; `sync` remplacerait la liste entière (module 7)."
+      },
+      {
+        "text": "Quelles règles de validation correspondent à « mot de passe obligatoire, d'au moins 8 caractères, identique à sa confirmation » (EF-01) ?",
+        "type": "multiple",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`required`",
+            "is_correct": true
+          },
+          {
+            "text": "`unique:users`",
+            "is_correct": false
+          },
+          {
+            "text": "`min:8`",
+            "is_correct": true
+          },
+          {
+            "text": "`confirmed`",
+            "is_correct": true
+          }
+        ],
+        "explanation": "`unique` sert à l'e-mail, pas au mot de passe. `confirmed` exige un champ `password_confirmation` identique (module 8)."
+      },
+      {
+        "text": "Dans la vue d'une liste paginée avec `Post::latest()->paginate(10)`, quelle instruction affiche les liens de pagination ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`@paginate($posts)`",
+            "is_correct": false
+          },
+          {
+            "text": "`{{ $posts->links() }}`",
+            "is_correct": true
+          },
+          {
+            "text": "`{{ $posts->pages() }}`",
+            "is_correct": false
+          },
+          {
+            "text": "`@foreach ($posts->pages as $page)`",
+            "is_correct": false
+          }
+        ],
+        "explanation": "`links()` affiche la navigation ; le numéro de page est lu dans `?page=` (module 9)."
+      },
+      {
+        "text": "Quel trait le model `User` doit-il utiliser pour pouvoir appeler `$user->createToken('passquiz')` ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`Notifiable`",
+            "is_correct": false
+          },
+          {
+            "text": "`HasFactory`",
+            "is_correct": false
+          },
+          {
+            "text": "`HasApiTokens`",
+            "is_correct": true
+          },
+          {
+            "text": "`Authorizable`",
+            "is_correct": false
+          }
+        ],
+        "explanation": "`HasApiTokens` vient de Laravel Sanctum. Sans lui, `createToken` provoque une erreur (module 10)."
+      },
+      {
+        "text": "Dans la connexion de PassQuiz, que se passe-t-il si les identifiants sont bons mais que l'admin a désactivé le compte (`actif` à faux) ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "La connexion réussit normalement",
+            "is_correct": false
+          },
+          {
+            "text": "Une erreur 401 « Identifiants invalides »",
+            "is_correct": false
+          },
+          {
+            "text": "Une erreur 403 « Compte désactivé. »",
+            "is_correct": true
+          },
+          {
+            "text": "Le compte est supprimé",
+            "is_correct": false
+          }
+        ],
+        "explanation": "`abort_unless($user->actif, 403, 'Compte désactivé.')` : l'utilisateur est bien identifié, mais n'a plus le droit d'entrer (module 10)."
+      },
+      {
+        "text": "Pour la zone admin de l'API PassQuiz, quelle liste de middleware est dans le bon ordre ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`['role:admin,formateur', 'auth:sanctum']`",
+            "is_correct": false
+          },
+          {
+            "text": "`['auth:sanctum', 'role:admin,formateur']`",
+            "is_correct": true
+          },
+          {
+            "text": "`['guest', 'role:admin,formateur']`",
+            "is_correct": false
+          },
+          {
+            "text": "`['role:admin,formateur']` seul suffit",
+            "is_correct": false
+          }
+        ],
+        "explanation": "Il faut d'abord identifier l'utilisateur (jeton), puis vérifier son rôle : sinon `$request->user()` est encore `null` (module 11)."
+      },
+      {
+        "text": "Avec cette Policy, que se passe-t-il quand le formateur n° 7 modifie la formation dont `formateur_id` vaut 4 ?\n\n```php\npublic function update(User $user, Formation $formation): bool\n{\n    return $formation->formateur_id === $user->id;\n}\n\n// Admin\\FormationController@update\nGate::authorize('update', $formation);\n```",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "La modification est enregistrée",
+            "is_correct": false
+          },
+          {
+            "text": "Une erreur 401",
+            "is_correct": false
+          },
+          {
+            "text": "Une erreur 404",
+            "is_correct": false
+          },
+          {
+            "text": "Une erreur 403",
+            "is_correct": true
+          }
+        ],
+        "explanation": "La Policy renvoie `false` et `Gate::authorize` arrête la requête : un formateur ne gère que ses formations (module 12, section 4.2)."
+      },
+      {
+        "text": "Pour qu'un apprenant ne puisse télécharger que ses propres certificats (EF-19), que faut-il mettre en place ?",
+        "type": "multiple",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Une Policy (ou une Gate) qui compare le `user_id` du certificat à l'utilisateur connecté",
+            "is_correct": true
+          },
+          {
+            "text": "Un appel à `Gate::authorize` dans le controller de téléchargement",
+            "is_correct": true
+          },
+          {
+            "text": "Seulement cacher le lien dans l'interface React",
+            "is_correct": false
+          },
+          {
+            "text": "Le middleware `auth:sanctum` sur la route de téléchargement",
+            "is_correct": true
+          }
+        ],
+        "explanation": "Masquer le lien ne protège rien : la route doit exiger un jeton (module 11) et vérifier le droit côté serveur (module 12)."
+      }
+    ]
+  }
+}

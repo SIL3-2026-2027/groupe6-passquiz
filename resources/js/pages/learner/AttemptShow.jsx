@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Icon from '../../components/Icon';
+import RichText from '../../components/RichText';
 import { Alert, Badge, Button, Card, Loading } from '../../components/ui';
 import api, { downloadFile, errorMessage } from '../../lib/api';
 import { questionTypeLabels } from '../../lib/format';
@@ -82,18 +83,18 @@ function QuizTaking({ attempt, questions, deadline, onSubmitted }) {
 
     return (
         <>
-            <div className="sticky top-16 z-30 -mx-4 mb-6 border-b border-slate-200 bg-slate-50/95 px-4 py-3 backdrop-blur">
+            <div className="sticky top-16 z-30 -mx-4 mb-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50/95 dark:bg-slate-950/95 px-4 py-3 backdrop-blur">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <p className="text-xs text-slate-500">{attempt.quiz.formation.title} · Tentative n° {attempt.attempt_number}</p>
-                        <h1 className="text-lg font-bold text-slate-900">{attempt.quiz.title}</h1>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{attempt.quiz.formation.title} · Tentative n° {attempt.attempt_number}</p>
+                        <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">{attempt.quiz.title}</h1>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="text-sm text-slate-600">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">
                             {answeredCount}/{questions.length} répondues
                         </span>
                         {remaining !== null && (
-                            <span className={`flex items-center gap-1 rounded-lg px-3 py-1.5 font-mono text-sm font-bold ${remaining < 60 ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-900'}`}>
+                            <span className={`flex items-center gap-1 rounded-lg px-3 py-1.5 font-mono text-sm font-bold ${remaining < 60 ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300' : 'bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-300'}`}>
                                 <Icon name="clock" className="size-4" />
                                 {minutes}:{seconds}
                             </span>
@@ -106,9 +107,9 @@ function QuizTaking({ attempt, questions, deadline, onSubmitted }) {
                 {questions.map((question, index) => (
                     <Card key={question.id}>
                         <div className="mb-3 flex items-start justify-between gap-3">
-                            <h2 className="font-semibold text-slate-900">
-                                <span className="text-blue-900">Question {index + 1}.</span> {question.text}
-                            </h2>
+                            <div className="min-w-0 font-semibold text-slate-900 dark:text-slate-100">
+                                <span className="text-blue-900 dark:text-blue-300">Question {index + 1}.</span> <RichText text={question.text} />
+                            </div>
                             <Badge color={question.type === 'multiple' ? 'purple' : 'gray'}>{questionTypeLabels[question.type]}</Badge>
                         </div>
                         <div className="flex flex-col gap-2">
@@ -118,16 +119,18 @@ function QuizTaking({ attempt, questions, deadline, onSubmitted }) {
                                 return (
                                     <label
                                         key={answer.id}
-                                        className={`flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-sm ring-1 transition ${checked ? 'bg-blue-50 ring-blue-900' : 'ring-slate-200 hover:bg-slate-50'}`}
+                                        className={`flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-sm ring-1 transition ${checked ? 'bg-blue-50 dark:bg-blue-950/50 ring-blue-900 dark:ring-blue-500' : 'ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                     >
                                         <input
                                             type={question.type === 'multiple' ? 'checkbox' : 'radio'}
                                             name={`question-${question.id}`}
                                             checked={checked}
                                             onChange={() => toggle(question, answer.id)}
-                                            className="size-4 text-blue-900 focus:ring-blue-900"
+                                            className="size-4 text-blue-900 dark:text-blue-300 focus:ring-blue-900 dark:focus:ring-blue-500"
                                         />
-                                        {answer.text}
+                                        <span>
+                                            <RichText text={answer.text} />
+                                        </span>
                                     </label>
                                 );
                             })}
@@ -152,23 +155,23 @@ function AttemptResult({ attempt }) {
 
     return (
         <div className="mx-auto flex max-w-3xl flex-col gap-6">
-            <Link to={`/quizzes/${attempt.quiz.id}`} className="text-sm text-slate-500 hover:text-blue-900">
+            <Link to={`/quizzes/${attempt.quiz.id}`} className="text-sm text-slate-500 dark:text-slate-400 hover:text-blue-900 dark:hover:text-blue-300">
                 ← Retour à l'évaluation
             </Link>
 
-            <Card className={`text-center ring-2 ${passed ? 'ring-emerald-300' : 'ring-amber-300'}`}>
-                <p className="text-sm font-medium text-slate-500">
+            <Card className={`text-center ring-2 ${passed ? 'ring-emerald-300 dark:ring-emerald-700' : 'ring-amber-300 dark:ring-amber-700'}`}>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                     {attempt.quiz.formation.title} · Tentative n° {attempt.attempt_number}
                 </p>
-                <p className={`mt-4 text-6xl font-black ${passed ? 'text-emerald-600' : 'text-amber-600'}`}>
+                <p className={`mt-4 text-6xl font-black ${passed ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                     {attempt.score}
-                    <span className="text-2xl text-slate-400">/100</span>
+                    <span className="text-2xl text-slate-400 dark:text-slate-500">/100</span>
                 </p>
-                <p className="mt-2 text-slate-600">Score requis : {attempt.passing_score}/100</p>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-2 text-slate-600 dark:text-slate-400">Score requis : {attempt.passing_score}/100</p>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     {attempt.earned_points} point(s) sur {attempt.total_points}
                 </p>
-                <p className={`mt-4 text-xl font-bold ${passed ? 'text-emerald-700' : 'text-amber-700'}`}>
+                <p className={`mt-4 text-xl font-bold ${passed ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'}`}>
                     {passed ? '✓ Formation réussie' : '✗ À reprendre'}
                 </p>
 
@@ -190,10 +193,10 @@ function AttemptResult({ attempt }) {
 
             {attempt.answers?.length > 0 && (
                 <Card>
-                    <h2 className="mb-3 font-semibold text-slate-900">Détail par question</h2>
+                    <h2 className="mb-3 font-semibold text-slate-900 dark:text-slate-100">Détail par question</h2>
                     <ul className="grid gap-2 sm:grid-cols-2">
                         {attempt.answers.map((answer, index) => (
-                            <li key={answer.question_id} className={`flex items-center justify-between rounded-lg px-4 py-2 text-sm ${answer.is_correct ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-800'}`}>
+                            <li key={answer.question_id} className={`flex items-center justify-between rounded-lg px-4 py-2 text-sm ${answer.is_correct ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300' : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300'}`}>
                                 <span>Question {index + 1}</span>
                                 <span className="font-semibold">{answer.is_correct ? `✓ +${answer.points_earned} pt` : '✗ 0 pt'}</span>
                             </li>

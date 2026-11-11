@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import QuestionFormModal from '../../components/admin/QuestionFormModal';
 import QuizFormModal from '../../components/admin/QuizFormModal';
+import RichText from '../../components/RichText';
 import { Alert, Badge, Button, Card, EmptyState, Loading, PageHeader, StatCard } from '../../components/ui';
 import api, { errorMessage } from '../../lib/api';
 import { questionTypeLabels } from '../../lib/format';
@@ -85,9 +86,9 @@ export default function QuizShow() {
                         <Card key={question.id}>
                             <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
                                 <div className="flex-1">
-                                    <p className="font-semibold text-slate-900">
-                                        <span className="text-blue-900">Q{index + 1}.</span> {question.text}
-                                    </p>
+                                    <div className="font-semibold text-slate-900 dark:text-slate-100">
+                                        <span className="text-blue-900 dark:text-blue-300">Q{index + 1}.</span> <RichText text={question.text} />
+                                    </div>
                                     <div className="mt-1 flex gap-2">
                                         <Badge color={question.type === 'multiple' ? 'purple' : 'gray'}>{questionTypeLabels[question.type]}</Badge>
                                         <Badge>{question.points} pt(s)</Badge>
@@ -97,7 +98,7 @@ export default function QuizShow() {
                                     <Button size="sm" variant="ghost" onClick={() => setModal({ type: 'question', question })}>
                                         Modifier
                                     </Button>
-                                    <Button size="sm" variant="ghost" className="text-red-600" onClick={() => removeQuestion(question)}>
+                                    <Button size="sm" variant="ghost" className="text-red-600 dark:text-red-400" onClick={() => removeQuestion(question)}>
                                         Supprimer
                                     </Button>
                                 </div>
@@ -106,14 +107,18 @@ export default function QuizShow() {
                                 {question.answers.map((answer) => (
                                     <li
                                         key={answer.id}
-                                        className={`rounded-lg px-3 py-2 text-sm ${answer.is_correct ? 'bg-emerald-50 font-medium text-emerald-800 ring-1 ring-emerald-300' : 'bg-slate-50 text-slate-600'}`}
+                                        className={`rounded-lg px-3 py-2 text-sm ${answer.is_correct ? 'bg-emerald-50 dark:bg-emerald-950/40 font-medium text-emerald-800 dark:text-emerald-300 ring-1 ring-emerald-300 dark:ring-emerald-700' : 'bg-slate-50 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400'}`}
                                     >
                                         {answer.is_correct ? '✓ ' : ''}
-                                        {answer.text}
+                                        <RichText text={answer.text} />
                                     </li>
                                 ))}
                             </ul>
-                            {question.explanation && <p className="mt-3 text-xs text-slate-500 italic">Explication : {question.explanation}</p>}
+                            {question.explanation && (
+                                <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 italic">
+                                    Explication : <RichText text={question.explanation} />
+                                </p>
+                            )}
                         </Card>
                     ))}
                 </div>

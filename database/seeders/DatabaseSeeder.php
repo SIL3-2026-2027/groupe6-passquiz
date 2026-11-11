@@ -30,6 +30,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'apprenant@passquiz.com',
         ]);
 
-        $this->call(FormationSeeder::class);
+        $this->call([FormationSeeder::class, LaravelFormationSeeder::class, ReactFormationSeeder::class]);
     }
 }

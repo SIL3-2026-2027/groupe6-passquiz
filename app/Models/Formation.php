@@ -9,12 +9,13 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['title', 'slug', 'code', 'description', 'image_path', 'level', 'is_published'])]
+#[Fillable(['trainer_id', 'title', 'slug', 'code', 'description', 'image_path', 'level', 'is_published'])]
 class Formation extends Model
 {
     /** @use HasFactory<FormationFactory> */
@@ -34,6 +35,16 @@ class Formation extends Model
     }
 
     /**
+     * Formateur responsable de la formation.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function trainer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'trainer_id');
+    }
+
+    /**
      * @return HasMany<Module, $this>
      */
     public function modules(): HasMany
@@ -50,11 +61,23 @@ class Formation extends Model
     }
 
     /**
+     * Évaluation finale de la formation (quiz sans module).
+     *
      * @return HasOne<Quiz, $this>
      */
     public function quiz(): HasOne
     {
-        return $this->hasOne(Quiz::class);
+        return $this->hasOne(Quiz::class)->whereNull('module_id');
+    }
+
+    /**
+     * Tous les quiz de la formation : quiz de modules et évaluation finale.
+     *
+     * @return HasMany<Quiz, $this>
+     */
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(Quiz::class);
     }
 
     /**
@@ -98,6 +121,19 @@ class Formation extends Model
     protected function published(Builder $query): void
     {
         $query->where('is_published', true);
+    }
+
+    /**
+     * Formations que l'utilisateur peut gérer : toutes pour un administrateur, les siennes pour un formateur.
+     *
+     * @param  Builder<Formation>  $query
+     */
+    #[Scope]
+    protected function managedBy(Builder $query, User $user): void
+    {
+        if (! $user->isAdmin()) {
+            $query->where('trainer_id', $user->id);
+        }
     }
 
     /**

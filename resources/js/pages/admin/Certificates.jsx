@@ -112,8 +112,8 @@ export default function Certificates() {
                             <tr key={certificate.id}>
                                 <Td className="font-mono text-xs">{certificate.number}</Td>
                                 <Td>
-                                    <p className="font-semibold text-slate-900">{certificate.user.name}</p>
-                                    <p className="text-xs text-slate-500">{certificate.user.email}</p>
+                                    <p className="font-semibold text-slate-900 dark:text-slate-100">{certificate.user.name}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">{certificate.user.email}</p>
                                 </Td>
                                 <Td>{certificate.formation.title}</Td>
                                 <Td>{certificate.score} %</Td>
@@ -136,18 +136,18 @@ export default function Certificates() {
                                             Rétablir
                                         </Button>
                                     ) : (
-                                        <Button variant="ghost" size="sm" className="text-amber-700" onClick={() => revoke(certificate)}>
+                                        <Button variant="ghost" size="sm" className="text-amber-700 dark:text-amber-300" onClick={() => revoke(certificate)}>
                                             Révoquer
                                         </Button>
                                     )}
-                                    <Button variant="ghost" size="sm" className="text-red-600" onClick={() => remove(certificate)}>
+                                    <Button variant="ghost" size="sm" className="text-red-600 dark:text-red-400" onClick={() => remove(certificate)}>
                                         Supprimer
                                     </Button>
                                 </Td>
                             </tr>
                         ))}
                     </Table>
-                    {data?.length === 0 && <p className="mt-4 text-center text-sm text-slate-500">Aucun certificat.</p>}
+                    {data?.length === 0 && <p className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">Aucun certificat.</p>}
                     <Pagination meta={meta} onPageChange={(page) => setFilters({ ...filters, page })} />
                 </>
             )}

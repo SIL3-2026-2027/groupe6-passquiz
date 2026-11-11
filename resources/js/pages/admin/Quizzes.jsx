@@ -25,20 +25,25 @@ export default function Quizzes() {
 
     return (
         <>
-            <PageHeader title="Quiz" subtitle="Une évaluation finale par formation : score minimum, durée, tentatives et questions." actions={<Button onClick={() => setEditing({})}>+ Nouvelle évaluation</Button>} />
+            <PageHeader
+                title="Quiz"
+                subtitle="Un quiz par module et une évaluation finale par formation : score minimum, durée, tentatives et questions."
+                actions={<Button onClick={() => setEditing({})}>+ Nouveau quiz</Button>}
+            />
             <Alert className="mb-4">{error ?? actionError}</Alert>
 
             {loading && !data ? (
                 <Loading />
             ) : (
                 <>
-                    <Table headers={['Évaluation', 'Formation', 'Questions', 'Score requis', 'Durée', 'Tentatives max', 'Passages', 'Statut', '']}>
+                    <Table headers={['Quiz', 'Formation', 'Type', 'Questions', 'Score requis', 'Durée', 'Tentatives max', 'Passages', 'Statut', '']}>
                         {data?.map((quiz) => (
                             <tr key={quiz.id}>
-                                <Td className="font-semibold text-slate-900">{quiz.title}</Td>
+                                <Td className="font-semibold text-slate-900 dark:text-slate-100">{quiz.title}</Td>
                                 <Td>{quiz.formation.title}</Td>
+                                <Td>{quiz.module ? <Badge>Module {quiz.module.number}</Badge> : <Badge color="blue">Évaluation finale</Badge>}</Td>
                                 <Td>
-                                    {quiz.questions_count} <span className="text-xs text-slate-500">({quiz.total_points} pts)</span>
+                                    {quiz.questions_count} <span className="text-xs text-slate-500 dark:text-slate-400">({quiz.total_points} pts)</span>
                                 </Td>
                                 <Td>{quiz.passing_score}/100</Td>
                                 <Td>{quiz.time_limit_minutes ? `${quiz.time_limit_minutes} min` : '—'}</Td>
@@ -52,14 +57,14 @@ export default function Quizzes() {
                                     <Button variant="ghost" size="sm" onClick={() => setEditing(quiz)}>
                                         Modifier
                                     </Button>
-                                    <Button variant="ghost" size="sm" className="text-red-600" onClick={() => remove(quiz)}>
+                                    <Button variant="ghost" size="sm" className="text-red-600 dark:text-red-400" onClick={() => remove(quiz)}>
                                         Supprimer
                                     </Button>
                                 </Td>
                             </tr>
                         ))}
                     </Table>
-                    {data?.length === 0 && <p className="mt-4 text-center text-sm text-slate-500">Aucune évaluation.</p>}
+                    {data?.length === 0 && <p className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">Aucun quiz.</p>}
                     <Pagination meta={meta} onPageChange={setPage} />
                 </>
             )}

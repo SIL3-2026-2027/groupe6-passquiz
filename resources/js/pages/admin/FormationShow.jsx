@@ -5,7 +5,8 @@ import FormationFormModal from '../../components/admin/FormationFormModal';
 import ModuleFormModal from '../../components/admin/ModuleFormModal';
 import QuizFormModal from '../../components/admin/QuizFormModal';
 import Icon from '../../components/Icon';
-import { Alert, Badge, Button, Card, EmptyState, Loading, PageHeader, Pagination, ProgressBar, Table, Td } from '../../components/ui';
+import { Alert, Badge, Button, Card, EmptyState, FormationStatusBadge, Loading, PageHeader, Pagination, ProgressBar, Table, Td } from '../../components/ui';
+import { useAuth } from '../../context/AuthContext';
 import api, { errorMessage } from '../../lib/api';
 import { formatDate, levelLabels } from '../../lib/format';
 import useApi from '../../lib/useApi';
@@ -34,8 +35,8 @@ function Learners({ formationId }) {
                 {data.map((learner) => (
                     <tr key={learner.id}>
                         <Td>
-                            <p className="font-semibold text-slate-900">{learner.name}</p>
-                            <p className="text-xs text-slate-500">{learner.email}</p>
+                            <p className="font-semibold text-slate-900 dark:text-slate-100">{learner.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{learner.email}</p>
                         </Td>
                         <Td>{formatDate(learner.enrollment.enrolled_at)}</Td>
                         <Td>
@@ -58,6 +59,7 @@ function Learners({ formationId }) {
 }
 
 export default function FormationShow() {
+    const { isAdmin } = useAuth();
     const { id } = useParams();
     const { data: formation, loading, error, reload } = useApi(`/admin/formations/${id}`);
     const [tab, setTab] = useState('content');
@@ -91,20 +93,48 @@ export default function FormationShow() {
         }
     };
 
+    const togglePublication = async () => {
+        try {
+            setActionError(null);
+            await api.put(`/admin/formations/${formation.id}/publication`, { is_published: !formation.is_published });
+            reload();
+        } catch (exception) {
+            setActionError(errorMessage(exception));
+        }
+    };
+
     const nextModuleNumber = Math.max(0, ...formation.modules.map((module) => module.number)) + 1;
-    const tabClass = (name) => `border-b-2 px-4 py-2 text-sm font-semibold ${tab === name ? 'border-blue-900 text-blue-900' : 'border-transparent text-slate-500 hover:text-slate-700'}`;
+    const tabClass = (name) => `border-b-2 px-4 py-2 text-sm font-semibold ${tab === name ? 'border-blue-900 dark:border-blue-500 text-blue-900 dark:text-blue-300' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`;
 
     return (
         <>
             <PageHeader
-                back={{ to: '/admin/formations', label: 'Formations' }}
+                back={{ to: '/admin/formations', label: isAdmin ? 'Formations' : 'Mes formations' }}
                 title={`Formation ${formation.title}`}
                 subtitle={formation.description}
-                actions={<Button variant="secondary" onClick={() => setModal({ type: 'formation' })}>Modifier la formation</Button>}
+                actions={
+                    <>
+                        <Button variant="secondary" onClick={() => setModal({ type: 'formation' })}>
+                            Modifier la formation
+                        </Button>
+                        {isAdmin && (
+                            <Button variant={formation.is_published ? 'secondary' : 'success'} onClick={togglePublication}>
+                                {formation.is_published ? 'Retirer la publication' : 'Valider et publier'}
+                            </Button>
+                        )}
+                    </>
+                }
             />
 
+            {!formation.is_published && !isAdmin && (
+                <Alert type="warning" className="mb-4">
+                    Cette formation n'est pas encore visible des apprenants : elle attend la validation d'un administrateur.
+                </Alert>
+            )}
+
             <div className="mb-6 flex flex-wrap gap-2">
-                {formation.is_published ? <Badge color="green">Publiée</Badge> : <Badge color="amber">Brouillon (invisible pour les apprenants)</Badge>}
+                <FormationStatusBadge formation={formation} />
+                {isAdmin && <Badge color="purple">{formation.trainer ? `Formateur : ${formation.trainer.name}` : 'Sans formateur'}</Badge>}
                 <Badge color="blue">{levelLabels[formation.level]}</Badge>
                 <Badge>Code {formation.code}</Badge>
                 <Badge>{formation.modules_count} modules</Badge>
@@ -112,7 +142,7 @@ export default function FormationShow() {
                 <Badge>{formation.enrollments_count} inscrits</Badge>
             </div>
 
-            <div className="mb-6 flex gap-2 border-b border-slate-200">
+            <div className="mb-6 flex gap-2 border-b border-slate-200 dark:border-slate-800">
                 <button type="button" className={tabClass('content')} onClick={() => setTab('content')}>
                     Modules & cours
                 </button>
@@ -134,12 +164,12 @@ export default function FormationShow() {
                     {formation.modules.length === 0 && <EmptyState title="Aucun module" description="Commencez par ajouter le module 1." />}
 
                     {formation.modules.map((module) => (
-                        <Card key={module.id} className="p-0">
-                            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+                        <Card key={module.id} className="overflow-hidden p-0">
+                            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-800 px-5 py-4">
                                 <div>
-                                    <p className="text-xs font-semibold tracking-wide text-blue-900 uppercase">Module {module.number}</p>
-                                    <h2 className="text-lg font-semibold text-slate-900">{module.title}</h2>
-                                    {module.description && <p className="text-sm text-slate-500">{module.description}</p>}
+                                    <p className="text-xs font-semibold tracking-wide text-blue-900 dark:text-blue-300 uppercase">Module {module.number}</p>
+                                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{module.title}</h2>
+                                    {module.description && <p className="text-sm text-slate-500 dark:text-slate-400">{module.description}</p>}
                                 </div>
                                 <div className="flex gap-1">
                                     <Button
@@ -155,24 +185,24 @@ export default function FormationShow() {
                                     <Button
                                         size="sm"
                                         variant="ghost"
-                                        className="text-red-600"
+                                        className="text-red-600 dark:text-red-400"
                                         onClick={() => remove(`/admin/modules/${module.id}`, `Supprimer le module ${module.number} et tous ses cours ?`)}
                                     >
                                         Supprimer
                                     </Button>
                                 </div>
                             </div>
-                            <ul className="divide-y divide-slate-100">
+                            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                                 {module.courses.map((course) => (
                                     <li key={course.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
-                                        <span className="flex size-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">{course.position}</span>
+                                        <span className="flex size-7 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400">{course.position}</span>
                                         <div className="flex-1">
-                                            <p className="font-medium text-slate-900">{course.title}</p>
-                                            <p className="flex flex-wrap gap-3 text-xs text-slate-500">
+                                            <p className="font-medium text-slate-900 dark:text-slate-100">{course.title}</p>
+                                            <p className="flex flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400">
                                                 {course.duration_minutes && <span>{course.duration_minutes} min</span>}
                                                 {course.video_url && <span>▶ Vidéo</span>}
                                                 {course.pdf_url && (
-                                                    <a href={course.pdf_url} target="_blank" rel="noreferrer" className="text-blue-900 hover:underline">
+                                                    <a href={course.pdf_url} target="_blank" rel="noreferrer" className="text-blue-900 dark:text-blue-300 hover:underline">
                                                         📄 PDF
                                                     </a>
                                                 )}
@@ -181,28 +211,53 @@ export default function FormationShow() {
                                         <Button size="sm" variant="ghost" onClick={() => setModal({ type: 'course', moduleId: module.id, course })}>
                                             Modifier
                                         </Button>
-                                        <Button size="sm" variant="ghost" className="text-red-600" onClick={() => remove(`/admin/courses/${course.id}`, `Supprimer le cours « ${course.title} » ?`)}>
+                                        <Button size="sm" variant="ghost" className="text-red-600 dark:text-red-400" onClick={() => remove(`/admin/courses/${course.id}`, `Supprimer le cours « ${course.title} » ?`)}>
                                             Supprimer
                                         </Button>
                                     </li>
                                 ))}
-                                {module.courses.length === 0 && <li className="px-5 py-3 text-sm text-slate-500">Aucun cours dans ce module.</li>}
+                                {module.courses.length === 0 && <li className="px-5 py-3 text-sm text-slate-500 dark:text-slate-400">Aucun cours dans ce module.</li>}
                             </ul>
+                            <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 px-5 py-3">
+                                <Icon name="quiz" className="size-6 text-blue-900 dark:text-blue-300" />
+                                {module.quiz ? (
+                                    <>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{module.quiz.title}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                                                {module.quiz.questions_count} questions · score requis {module.quiz.passing_score}/100
+                                                {module.quiz.time_limit_minutes && ` · ${module.quiz.time_limit_minutes} min`}
+                                            </p>
+                                        </div>
+                                        {!module.quiz.is_published && <Badge color="amber">Brouillon</Badge>}
+                                        <Button size="sm" variant="secondary" to={`/admin/quizzes/${module.quiz.id}`}>
+                                            Gérer les questions
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="flex-1 text-sm text-slate-600 dark:text-slate-400">Ce module n'a pas encore de quiz.</p>
+                                        <Button size="sm" onClick={() => setModal({ type: 'quiz', module })}>
+                                            Créer le quiz du module
+                                        </Button>
+                                    </>
+                                )}
+                            </div>
                         </Card>
                     ))}
 
-                    <Card className="border-l-4 border-blue-900">
+                    <Card className="border-l-4 border-blue-900 dark:border-blue-500">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-3">
-                                <Icon name="quiz" className="size-8 text-blue-900" />
+                                <Icon name="quiz" className="size-8 text-blue-900 dark:text-blue-300" />
                                 <div>
-                                    <p className="text-xs font-semibold tracking-wide text-blue-900 uppercase">Évaluation finale</p>
+                                    <p className="text-xs font-semibold tracking-wide text-blue-900 dark:text-blue-300 uppercase">Évaluation finale</p>
                                     {formation.quiz ? (
-                                        <p className="font-semibold text-slate-900">
+                                        <p className="font-semibold text-slate-900 dark:text-slate-100">
                                             {formation.quiz.title} · {formation.quiz.questions_count} questions · score requis {formation.quiz.passing_score}/100
                                         </p>
                                     ) : (
-                                        <p className="text-slate-600">Cette formation n'a pas encore d'évaluation.</p>
+                                        <p className="text-slate-600 dark:text-slate-400">Cette formation n'a pas encore d'évaluation.</p>
                                     )}
                                 </div>
                             </div>
@@ -223,7 +278,7 @@ export default function FormationShow() {
             {modal?.type === 'course' && (
                 <CourseFormModal moduleId={modal.moduleId} course={modal.course} nextPosition={modal.nextPosition} onClose={() => setModal(null)} onSaved={closeAndReload} />
             )}
-            {modal?.type === 'quiz' && <QuizFormModal formationId={formation.id} onClose={() => setModal(null)} onSaved={closeAndReload} />}
+            {modal?.type === 'quiz' && <QuizFormModal formationId={formation.id} module={modal.module} onClose={() => setModal(null)} onSaved={closeAndReload} />}
         </>
     );
 }

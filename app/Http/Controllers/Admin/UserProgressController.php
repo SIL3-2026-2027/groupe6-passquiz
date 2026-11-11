@@ -10,15 +10,28 @@ use App\Models\Formation;
 use App\Models\QuizAttempt;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class UserProgressController extends Controller
 {
     /**
      * Progression d'un apprenant : avancement par formation, tentatives et certificats.
+     * Un formateur ne voit que les formations qu'il gère, et seulement si l'apprenant y est inscrit.
      */
-    public function __invoke(User $user): JsonResponse
+    public function __invoke(Request $request, User $user): JsonResponse
     {
-        $formations = $user->formations()->withProgressFor($user)->with('quiz')->get();
+        $formations = $user->formations()
+            ->managedBy($request->user())
+            ->withProgressFor($user)
+            ->with('quiz')
+            ->get();
+
+        abort_if(
+            ! $request->user()->isAdmin() && $formations->isEmpty(),
+            Response::HTTP_FORBIDDEN,
+            'Cet apprenant n\'est inscrit à aucune de vos formations.',
+        );
 
         $attemptsByQuiz = $user->quizAttempts()
             ->whereNotNull('submitted_at')

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Icon from '../components/Icon';
 import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 import { Alert, Button, Input, Spinner } from '../components/ui';
 import { formatDate } from '../lib/format';
 import useApi from '../lib/useApi';
@@ -22,29 +23,29 @@ function VerificationResult({ number }) {
     }
 
     return (
-        <div className={`rounded-xl p-5 ring-1 ${certificate.is_valid ? 'bg-emerald-50 ring-emerald-200' : 'bg-red-50 ring-red-200'}`}>
+        <div className={`rounded-xl p-5 ring-1 ${certificate.is_valid ? 'bg-emerald-50 dark:bg-emerald-950/40 ring-emerald-200 dark:ring-emerald-800' : 'bg-red-50 dark:bg-red-950/40 ring-red-200 dark:ring-red-800'}`}>
             <div className="mb-4 flex items-center gap-3">
-                <span className={`flex size-10 items-center justify-center rounded-full ${certificate.is_valid ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                <span className={`flex size-10 items-center justify-center rounded-full ${certificate.is_valid ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300' : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'}`}>
                     <Icon name={certificate.is_valid ? 'check' : 'x'} />
                 </span>
                 <div>
-                    <p className={`font-bold ${certificate.is_valid ? 'text-emerald-800' : 'text-red-800'}`}>{certificate.is_valid ? 'Certificat authentique' : 'Certificat révoqué'}</p>
-                    <p className="font-mono text-xs text-slate-500">N° {certificate.number}</p>
+                    <p className={`font-bold ${certificate.is_valid ? 'text-emerald-800 dark:text-emerald-300' : 'text-red-800 dark:text-red-300'}`}>{certificate.is_valid ? 'Certificat authentique' : 'Certificat révoqué'}</p>
+                    <p className="font-mono text-xs text-slate-500 dark:text-slate-400">N° {certificate.number}</p>
                 </div>
             </div>
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-                <dt className="text-slate-500">Titulaire</dt>
-                <dd className="font-semibold text-slate-900">{certificate.holder_name}</dd>
-                <dt className="text-slate-500">Formation</dt>
-                <dd className="font-semibold text-slate-900">{certificate.formation_title}</dd>
-                <dt className="text-slate-500">Score</dt>
-                <dd className="text-slate-900">{certificate.score} %</dd>
-                <dt className="text-slate-500">Délivré le</dt>
-                <dd className="text-slate-900">{formatDate(certificate.issued_at)}</dd>
+                <dt className="text-slate-500 dark:text-slate-400">Titulaire</dt>
+                <dd className="font-semibold text-slate-900 dark:text-slate-100">{certificate.holder_name}</dd>
+                <dt className="text-slate-500 dark:text-slate-400">Formation</dt>
+                <dd className="font-semibold text-slate-900 dark:text-slate-100">{certificate.formation_title}</dd>
+                <dt className="text-slate-500 dark:text-slate-400">Score</dt>
+                <dd className="text-slate-900 dark:text-slate-100">{certificate.score} %</dd>
+                <dt className="text-slate-500 dark:text-slate-400">Délivré le</dt>
+                <dd className="text-slate-900 dark:text-slate-100">{formatDate(certificate.issued_at)}</dd>
                 {!certificate.is_valid && (
                     <>
-                        <dt className="text-slate-500">Révoqué le</dt>
-                        <dd className="text-red-700">{formatDate(certificate.revoked_at)}</dd>
+                        <dt className="text-slate-500 dark:text-slate-400">Révoqué le</dt>
+                        <dd className="text-red-700 dark:text-red-300">{formatDate(certificate.revoked_at)}</dd>
                     </>
                 )}
             </dl>
@@ -69,13 +70,16 @@ export default function VerifyCertificate() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 px-4 py-12">
+        <div className="relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 px-4 py-12 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950">
+            <div className="absolute top-4 right-4">
+                <ThemeToggle className="text-blue-100 hover:bg-white/10 hover:text-white" />
+            </div>
             <div className="mb-8">
                 <Logo light />
             </div>
-            <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
-                <h1 className="text-xl font-bold text-slate-900">Vérifier un certificat</h1>
-                <p className="mt-1 mb-6 text-sm text-slate-500">Saisissez le numéro imprimé sur le certificat (ex. PQ-LAR-2026-00001).</p>
+            <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-2xl">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Vérifier un certificat</h1>
+                <p className="mt-1 mb-6 text-sm text-slate-500 dark:text-slate-400">Saisissez le numéro imprimé sur le certificat (ex. PQ-LAR-2026-00001).</p>
                 <form onSubmit={search} className="mb-6 flex gap-2">
                     <div className="flex-1">
                         <Input name="number" placeholder="Numéro du certificat" value={value} onChange={(event) => setValue(event.target.value)} />

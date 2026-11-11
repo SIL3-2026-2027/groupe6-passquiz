@@ -59,21 +59,24 @@ export default function QuizShow() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         {meta.has_passed ? (
-                            <p className="font-semibold text-emerald-700">✓ Formation réussie ! Votre certificat est disponible.</p>
+                            <p className="font-semibold text-emerald-700 dark:text-emerald-300">
+                                {quiz.is_final ? '✓ Formation réussie ! Votre certificat est disponible.' : `✓ Module ${quiz.module.number} validé.`}
+                            </p>
                         ) : !meta.is_enrolled ? (
-                            <p className="text-slate-600">Inscrivez-vous à la formation pour passer l'évaluation.</p>
+                            <p className="text-slate-600 dark:text-slate-400">Inscrivez-vous à la formation pour passer l'évaluation.</p>
                         ) : meta.can_attempt || inProgress ? (
-                            <p className="text-slate-600">
-                                Répondez à toutes les questions. Il faut obtenir au moins <strong>{quiz.passing_score}/100</strong> pour réussir et obtenir le certificat.
+                            <p className="text-slate-600 dark:text-slate-400">
+                                Répondez à toutes les questions. Il faut obtenir au moins <strong>{quiz.passing_score}/100</strong>{' '}
+                                {quiz.is_final ? 'pour réussir et obtenir le certificat.' : 'pour valider le module.'}
                                 {quiz.time_limit_minutes && ` Vous disposez de ${quiz.time_limit_minutes} minutes.`}
                             </p>
                         ) : (
                             <div className="flex flex-col gap-3">
-                                <p className="text-slate-600">{meta.blocking_reason}</p>
+                                <p className="text-slate-600 dark:text-slate-400">{meta.blocking_reason}</p>
                                 {coursesRemaining && (
                                     <div className="max-w-sm">
-                                        <p className="mb-1 text-xs text-slate-500">
-                                            {meta.progress.completed_courses}/{meta.progress.total_courses} cours terminés
+                                        <p className="mb-1 text-xs text-slate-500 dark:text-slate-400">
+                                            {meta.progress.completed_courses}/{meta.progress.total_courses} cours terminés{!quiz.is_final && ' dans ce module'}
                                         </p>
                                         <ProgressBar percent={meta.progress.percent} size="sm" />
                                     </div>
@@ -83,7 +86,7 @@ export default function QuizShow() {
                         <Alert className="mt-3">{state.error}</Alert>
                     </div>
                     <div className="shrink-0">
-                        {meta.has_passed && <Button to="/certificates">Voir mes certificats</Button>}
+                        {meta.has_passed && (quiz.is_final ? <Button to="/certificates">Voir mes certificats</Button> : <Button to={`/formations/${quiz.formation.id}`}>Continuer la formation</Button>)}
                         {!meta.has_passed && (!meta.is_enrolled || coursesRemaining) && <Button to={`/formations/${quiz.formation.id}`}>{meta.is_enrolled ? 'Continuer les cours' : 'Aller à la formation'}</Button>}
                         {!meta.has_passed && meta.is_enrolled && (inProgress || meta.can_attempt) && (
                             <Button size="lg" onClick={start} loading={state.starting}>
@@ -96,7 +99,7 @@ export default function QuizShow() {
 
             {meta.attempts.length > 0 && (
                 <>
-                    <h2 className="mb-3 text-lg font-bold text-slate-900">Mes tentatives</h2>
+                    <h2 className="mb-3 text-lg font-bold text-slate-900 dark:text-slate-100">Mes tentatives</h2>
                     <Table headers={['Tentative', 'Date', 'Score', 'Statut', '']}>
                         {meta.attempts.map((attempt) => (
                             <tr key={attempt.id}>

@@ -9,6 +9,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\FormationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuizAttemptController;
 use App\Http\Controllers\QuizController;
@@ -56,6 +57,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+
     Route::get('formations', [FormationController::class, 'index'])->name('formations.index');
     Route::get('formations/{formation}', [FormationController::class, 'show'])->name('formations.show');
     Route::post('formations/{formation}/enroll', [EnrollmentController::class, 'store'])->name('formations.enroll');
@@ -80,7 +85,9 @@ Route::middleware('auth:sanctum')->group(function () {
 |--------------------------------------------------------------------------
 |
 | Formateurs et administrateurs : contenu pédagogique, évaluations et résultats.
-| Administrateurs uniquement : utilisateurs, certificats, suppression de tentatives.
+| Un formateur ne gère que ses propres formations (FormationPolicy::manage).
+| Administrateurs uniquement : validation/publication des formations, utilisateurs,
+| certificats, suppression de tentatives.
 */
 
 Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->name('admin.')->group(function () {
@@ -89,6 +96,8 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->name('admin.')->g
 
     Route::apiResource('formations', Admin\FormationController::class);
     Route::get('formations/{formation}/learners', Admin\FormationLearnerController::class)->name('formations.learners');
+    Route::put('formations/{formation}/publication', Admin\FormationPublicationController::class)->name('formations.publication');
+    Route::get('users/{user}/progress', Admin\UserProgressController::class)->name('users.progress');
     Route::apiResource('formations.modules', Admin\ModuleController::class)->shallow();
     Route::apiResource('modules.courses', Admin\CourseController::class)->shallow();
 
@@ -101,7 +110,6 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->name('admin.')->g
 
     Route::middleware('admin')->group(function () {
         Route::apiResource('users', Admin\UserController::class);
-        Route::get('users/{user}/progress', Admin\UserProgressController::class)->name('users.progress');
 
         Route::delete('attempts/{attempt}', [Admin\QuizAttemptController::class, 'destroy'])->name('attempts.destroy');
 

@@ -36,8 +36,8 @@ export default function Register() {
     return (
         <form onSubmit={submit} className="flex flex-col gap-5">
             <div>
-                <h1 className="text-2xl font-bold text-slate-900">Créer un compte</h1>
-                <p className="mt-1 text-sm text-slate-500">Commencez votre apprentissage dès aujourd'hui.</p>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Créer un compte</h1>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Commencez votre apprentissage dès aujourd'hui.</p>
             </div>
             <Alert>{message}</Alert>
             <Input label="Nom complet" name="name" value={values.name} onChange={change} error={errors.name} autoComplete="name" required />
@@ -47,9 +47,9 @@ export default function Register() {
             <Button type="submit" loading={submitting} className="w-full">
                 S'inscrire
             </Button>
-            <p className="text-center text-sm text-slate-600">
+            <p className="text-center text-sm text-slate-600 dark:text-slate-400">
                 Déjà inscrit ?{' '}
-                <Link to="/login" className="font-semibold text-blue-900 hover:underline">
+                <Link to="/login" className="font-semibold text-blue-900 dark:text-blue-300 hover:underline">
                     Se connecter
                 </Link>
             </p>

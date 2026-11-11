@@ -28,6 +28,8 @@ class FormationResource extends JsonResource
             'level' => $this->level,
             'image_url' => $this->image_path ? Storage::disk('public')->url($this->image_path) : null,
             'is_published' => $this->is_published,
+            'trainer_id' => $this->trainer_id,
+            'trainer' => new UserResource($this->whenLoaded('trainer')),
             'is_enrolled' => $this->whenHas('is_enrolled', fn () => (bool) $this->is_enrolled),
             'modules_count' => $this->whenCounted('modules'),
             'courses_count' => $this->whenCounted('courses'),

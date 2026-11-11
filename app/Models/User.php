@@ -55,6 +55,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Formations dont l'utilisateur est le formateur.
+     *
+     * @return HasMany<Formation, $this>
+     */
+    public function trainedFormations(): HasMany
+    {
+        return $this->hasMany(Formation::class, 'trainer_id');
+    }
+
+    /**
      * @return HasMany<Enrollment, $this>
      */
     public function enrollments(): HasMany

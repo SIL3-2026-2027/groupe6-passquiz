@@ -11,12 +11,15 @@ use App\Models\Question;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 class AnswerController extends Controller
 {
     public function index(Question $question): AnonymousResourceCollection
     {
+        Gate::authorize('manage', $question->quiz->formation);
+
         return AnswerResource::collection($question->answers);
     }
 
@@ -25,6 +28,8 @@ class AnswerController extends Controller
      */
     public function store(AnswerRequest $request, Question $question): JsonResponse
     {
+        Gate::authorize('manage', $question->quiz->formation);
+
         $this->ensureSingleCorrectAnswer($question, $request->boolean('is_correct'));
 
         $answer = $question->answers()->create($request->validated());
@@ -37,6 +42,8 @@ class AnswerController extends Controller
      */
     public function update(AnswerRequest $request, Answer $answer): AnswerResource
     {
+        Gate::authorize('manage', $answer->question->quiz->formation);
+
         $this->ensureSingleCorrectAnswer($answer->question, $request->boolean('is_correct'), $answer);
 
         $answer->update($request->validated());
@@ -46,6 +53,8 @@ class AnswerController extends Controller
 
     public function destroy(Answer $answer): Response
     {
+        Gate::authorize('manage', $answer->question->quiz->formation);
+
         $answer->delete();
 
         return response()->noContent();

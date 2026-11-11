@@ -9,6 +9,7 @@ use App\Http\Resources\CertificateResource;
 use App\Models\Certificate;
 use App\Models\Formation;
 use App\Models\User;
+use App\Notifications\CertificateIssued;
 use App\Services\CertificateService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -58,6 +59,10 @@ class CertificateController extends Controller
             $request->integer('score'),
         );
 
+        if ($certificate->wasRecentlyCreated) {
+            $certificate->user->notify(new CertificateIssued($certificate));
+        }
+
         return (new CertificateResource($certificate->refresh()->load(['user', 'formation'])))
             ->response()
             ->setStatusCode(Response::HTTP_CREATED);
@@ -86,6 +91,7 @@ class CertificateController extends Controller
     public function restore(Certificate $certificate): CertificateResource
     {
         $certificate->update(['revoked_at' => null, 'revocation_reason' => null]);
+        $certificate->user->notify(new CertificateIssued($certificate));
 
         return new CertificateResource($certificate->load(['user', 'formation']));
     }

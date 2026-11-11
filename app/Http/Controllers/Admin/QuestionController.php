@@ -11,11 +11,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class QuestionController extends Controller
 {
     public function index(Quiz $quiz): AnonymousResourceCollection
     {
+        Gate::authorize('manage', $quiz->formation);
+
         return QuestionResource::collection($quiz->questions()->with('answers')->get());
     }
 
@@ -24,6 +27,8 @@ class QuestionController extends Controller
      */
     public function store(QuestionRequest $request, Quiz $quiz): JsonResponse
     {
+        Gate::authorize('manage', $quiz->formation);
+
         $question = DB::transaction(function () use ($request, $quiz): Question {
             $question = $quiz->questions()->create($request->safe()->except('answers'));
 
@@ -37,6 +42,8 @@ class QuestionController extends Controller
 
     public function show(Question $question): QuestionResource
     {
+        Gate::authorize('manage', $question->quiz->formation);
+
         return new QuestionResource($question->load('answers'));
     }
 
@@ -46,6 +53,8 @@ class QuestionController extends Controller
      */
     public function update(QuestionRequest $request, Question $question): QuestionResource
     {
+        Gate::authorize('manage', $question->quiz->formation);
+
         DB::transaction(function () use ($request, $question): void {
             $question->update($request->safe()->except('answers'));
 
@@ -59,6 +68,8 @@ class QuestionController extends Controller
 
     public function destroy(Question $question): Response
     {
+        Gate::authorize('manage', $question->quiz->formation);
+
         $question->delete();
 
         return response()->noContent();

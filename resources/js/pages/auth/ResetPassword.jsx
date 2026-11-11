@@ -39,8 +39,8 @@ export default function ResetPassword() {
     return (
         <form onSubmit={submit} className="flex flex-col gap-5">
             <div>
-                <h1 className="text-2xl font-bold text-slate-900">Nouveau mot de passe</h1>
-                <p className="mt-1 text-sm text-slate-500">Choisissez un nouveau mot de passe pour votre compte.</p>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Nouveau mot de passe</h1>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Choisissez un nouveau mot de passe pour votre compte.</p>
             </div>
             <Alert>{message}</Alert>
             <Alert>{errors.token}</Alert>
@@ -50,7 +50,7 @@ export default function ResetPassword() {
             <Button type="submit" loading={submitting} className="w-full">
                 Réinitialiser
             </Button>
-            <Link to="/login" className="text-center text-sm font-medium text-blue-900 hover:underline">
+            <Link to="/login" className="text-center text-sm font-medium text-blue-900 dark:text-blue-300 hover:underline">
                 ← Retour à la connexion
             </Link>
         </form>

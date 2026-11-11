@@ -18,19 +18,19 @@ export default function Formations() {
                     <Link
                         key={formation.id}
                         to={`/formations/${formation.id}`}
-                        className="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md"
+                        className="flex flex-col overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 transition hover:-translate-y-0.5 hover:shadow-md"
                     >
                         <FormationCover formation={formation} />
                         <div className="flex flex-1 flex-col gap-3 p-5">
                             <div className="flex items-center justify-between gap-2">
-                                <h2 className="text-lg font-bold text-slate-900">{formation.title}</h2>
+                                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{formation.title}</h2>
                                 <Badge color="blue">{levelLabels[formation.level]}</Badge>
                             </div>
-                            <p className="line-clamp-3 flex-1 text-sm text-slate-600">{formation.description}</p>
-                            <p className="text-xs text-slate-500">
+                            <p className="line-clamp-3 flex-1 text-sm text-slate-600 dark:text-slate-400">{formation.description}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                                 {formation.modules_count} modules · {formation.courses_count} cours
                             </p>
-                            {formation.is_enrolled ? <ProgressBar percent={formation.progress.percent} size="sm" /> : <span className="text-sm font-semibold text-blue-900">Découvrir →</span>}
+                            {formation.is_enrolled ? <ProgressBar percent={formation.progress.percent} size="sm" /> : <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">Découvrir →</span>}
                         </div>
                     </Link>
                 ))}

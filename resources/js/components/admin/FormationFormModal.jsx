@@ -1,4 +1,6 @@
+import { useAuth } from '../../context/AuthContext';
 import api, { toFormData } from '../../lib/api';
+import useApi from '../../lib/useApi';
 import useForm from '../../lib/useForm';
 import { Alert, Button, Checkbox, Input, Modal, Select, Textarea } from '../ui';
 
@@ -9,7 +11,10 @@ export const levelOptions = [
 ];
 
 export default function FormationFormModal({ formation, onClose, onSaved }) {
+    const { isAdmin } = useAuth();
+    const { data: trainers } = useApi(isAdmin ? '/admin/users' : null, { role: 'trainer', per_page: 100 });
     const form = useForm({
+        trainer_id: formation?.trainer_id ?? '',
         title: formation?.title ?? '',
         code: formation?.code ?? '',
         slug: formation?.slug ?? '',
@@ -22,7 +27,9 @@ export default function FormationFormModal({ formation, onClose, onSaved }) {
 
     const save = () =>
         form.submit(async (values) => {
-            const payload = { ...values, image: values.image ?? undefined };
+            const payload = isAdmin
+                ? { ...values, image: values.image ?? undefined }
+                : { ...values, image: values.image ?? undefined, is_published: undefined, trainer_id: undefined };
             const { data } = formation
                 ? await api.post(`/admin/formations/${formation.id}`, toFormData(payload, 'PUT'))
                 : await api.post('/admin/formations', toFormData(payload));
@@ -56,6 +63,14 @@ export default function FormationFormModal({ formation, onClose, onSaved }) {
                     <Textarea label="Description" {...form.bind('description')} />
                 </div>
                 <Select label="Niveau" {...form.bind('level')} options={levelOptions} />
+                {isAdmin && (
+                    <Select
+                        label="Formateur responsable"
+                        {...form.bind('trainer_id')}
+                        placeholder="Aucun formateur"
+                        options={(trainers ?? []).map((trainer) => ({ value: trainer.id, label: trainer.name }))}
+                    />
+                )}
                 <Input
                     label="Image"
                     type="file"
@@ -65,7 +80,15 @@ export default function FormationFormModal({ formation, onClose, onSaved }) {
                     onChange={(event) => form.setField('image', event.target.files[0] ?? null)}
                 />
                 <div className="flex flex-col gap-2 sm:col-span-2">
-                    <Checkbox label="Publiée (visible par les apprenants)" checked={form.values.is_published} onChange={(value) => form.setField('is_published', value)} />
+                    {isAdmin ? (
+                        <Checkbox label="Publiée (visible par les apprenants)" checked={form.values.is_published} onChange={(value) => form.setField('is_published', value)} />
+                    ) : (
+                        <Alert type="info">
+                            {formation?.is_published
+                                ? 'Cette formation est publiée : vos modifications sont visibles des apprenants.'
+                                : 'La formation restera en attente jusqu’à sa validation et sa publication par un administrateur.'}
+                        </Alert>
+                    )}
                     {formation?.image_url && (
                         <Checkbox label="Supprimer l'image actuelle" checked={form.values.remove_image} onChange={(value) => form.setField('remove_image', value)} />
                     )}

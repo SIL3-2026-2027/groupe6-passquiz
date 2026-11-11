@@ -30,13 +30,19 @@ class FormationController extends Controller
     }
 
     /**
-     * Détail d'une formation : modules, cours (terminés ou non) et évaluation.
+     * Détail d'une formation : modules, cours (terminés ou non), quiz de modules et évaluation finale,
+     * avec pour chaque quiz l'indication `is_passed` pour l'utilisateur.
      */
     public function show(Request $request, Formation $formation): FormationResource
     {
         abort_unless($formation->is_published, Response::HTTP_NOT_FOUND);
 
         $user = $request->user();
+
+        $publishedQuiz = fn ($query) => $query
+            ->where('is_published', true)
+            ->withCount('questions')
+            ->withExists(['attempts as is_passed' => fn (Builder $attempts) => $attempts->whereBelongsTo($user)->where('passed', true)]);
 
         $formation = Formation::query()
             ->withProgressFor($user)
@@ -46,7 +52,8 @@ class FormationController extends Controller
                 'modules.courses' => fn ($query) => $query->withExists([
                     'completedBy as is_completed' => fn (Builder $users) => $users->whereKey($user->id),
                 ]),
-                'quiz' => fn ($query) => $query->where('is_published', true)->withCount('questions'),
+                'modules.quiz' => $publishedQuiz,
+                'quiz' => $publishedQuiz,
             ])
             ->findOrFail($formation->id);
 

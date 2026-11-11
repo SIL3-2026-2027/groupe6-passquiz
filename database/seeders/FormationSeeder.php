@@ -4,7 +4,9 @@ namespace Database\Seeders;
 
 use App\Enums\FormationLevel;
 use App\Enums\QuestionType;
+use App\Enums\UserRole;
 use App\Models\Formation;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,12 +15,16 @@ class FormationSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Formations Laravel et React décrites dans le cahier des charges.
+     * Formation Laravel décrite dans le cahier des charges (contenu provisoire),
+     * confiée au compte formateur de démonstration. La formation React est créée par ReactFormationSeeder.
      */
     public function run(): void
     {
+        $trainer = User::where('role', UserRole::Trainer)->oldest('id')->first();
+
         foreach ($this->formations() as $data) {
             $formation = Formation::create([
+                'trainer_id' => $trainer?->id,
                 'title' => $data['title'],
                 'slug' => $data['slug'],
                 'code' => $data['code'],
@@ -94,21 +100,6 @@ class FormationSeeder extends Seeder
                     ['text' => 'Quelle commande exécute les migrations ?', 'answers' => ['php artisan migrate' => true, 'php artisan db:run' => false, 'php artisan schema:up' => false]],
                     ['text' => 'Les migrations permettent de versionner la structure de la base de données.', 'type' => QuestionType::TrueFalse, 'answers' => ['Vrai' => true, 'Faux' => false]],
                     ['text' => 'Quelles relations Eloquent existent ?', 'answers' => ['hasMany' => true, 'belongsTo' => true, 'linkedTo' => false, 'belongsToMany' => true]],
-                ],
-            ],
-            [
-                'title' => 'React',
-                'slug' => 'react',
-                'code' => 'REA',
-                'description' => 'Maîtrisez la bibliothèque JavaScript React pour construire des interfaces utilisateur.',
-                'modules' => ['Introduction à React', 'JSX', 'Components', 'Props', 'State', 'Hooks'],
-                'questions' => [
-                    ['text' => 'React est principalement :', 'answers' => ['Une bibliothèque JavaScript pour construire des interfaces' => true, 'Un framework backend' => false, 'Une base de données' => false]],
-                    ['text' => 'Que signifie JSX ?', 'answers' => ['JavaScript XML' => true, 'Java Syntax Extension' => false, 'JSON XML' => false]],
-                    ['text' => 'Comment un composant parent transmet-il des données à un enfant ?', 'answers' => ['Via les props' => true, 'Via le state de l\'enfant' => false, 'Via le DOM' => false]],
-                    ['text' => 'Quel hook permet de gérer un état local ?', 'answers' => ['useState' => true, 'useEffect' => false, 'useRef' => false]],
-                    ['text' => 'Un composant React peut modifier directement ses props.', 'type' => QuestionType::TrueFalse, 'answers' => ['Vrai' => false, 'Faux' => true]],
-                    ['text' => 'Lesquels sont des hooks React ?', 'answers' => ['useEffect' => true, 'useMemo' => true, 'useFetch' => false, 'useContext' => true]],
                 ],
             ],
         ];

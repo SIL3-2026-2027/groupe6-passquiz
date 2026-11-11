@@ -21,12 +21,13 @@ class QuizController extends Controller
 
     /**
      * Informations de l'évaluation et historique des tentatives de l'utilisateur (sans les questions).
+     * `progress` porte sur les cours du module pour un quiz de module, sur toute la formation sinon.
      */
     public function show(Request $request, Quiz $quiz): JsonResponse
     {
         Gate::authorize('view', $quiz);
 
-        $quiz->load('formation')->loadCount('questions')->loadSum('questions', 'points');
+        $quiz->load(['formation', 'module'])->loadCount('questions')->loadSum('questions', 'points');
 
         $user = $request->user();
         $attempts = $quiz->attempts()->whereBelongsTo($user)->latest('started_at')->get();
@@ -36,7 +37,9 @@ class QuizController extends Controller
         return (new QuizResource($quiz))->additional([
             'meta' => [
                 'is_enrolled' => $user->isEnrolledIn($quiz->formation),
-                'progress' => $this->progress->summary($user, $quiz->formation),
+                'progress' => $quiz->isFinal()
+                    ? $this->progress->summary($user, $quiz->formation)
+                    : $this->progress->moduleSummary($user, $quiz->module),
                 'has_passed' => $attempts->contains(fn (QuizAttempt $attempt): bool => (bool) $attempt->passed),
                 'best_score' => $attempts->max('score'),
                 'remaining_attempts' => $remainingAttempts,

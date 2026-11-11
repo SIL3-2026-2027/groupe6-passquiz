@@ -9,16 +9,18 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 
 class QuizAttemptController extends Controller
 {
     /**
-     * Résultats des évaluations (filtres : user_id, quiz_id, formation_id, status = passed|failed|in_progress).
+     * Résultats des évaluations des formations gérées par l'utilisateur (filtres : user_id, quiz_id, formation_id, status = passed|failed|in_progress).
      */
     public function index(Request $request): AnonymousResourceCollection
     {
         $attempts = QuizAttempt::query()
             ->with(['user', 'quiz.formation'])
+            ->whereHas('quiz.formation', fn (Builder $formations) => $formations->managedBy($request->user()))
             ->when($request->filled('user_id'), fn (Builder $query) => $query->where('user_id', $request->integer('user_id')))
             ->when($request->filled('quiz_id'), fn (Builder $query) => $query->where('quiz_id', $request->integer('quiz_id')))
             ->when($request->filled('formation_id'), fn (Builder $query) => $query->whereRelation('quiz', 'formation_id', $request->integer('formation_id')))
@@ -39,6 +41,8 @@ class QuizAttemptController extends Controller
      */
     public function show(QuizAttempt $attempt): QuizAttemptResource
     {
+        Gate::authorize('manage', $attempt->quiz->formation);
+
         return new QuizAttemptResource($attempt->load(['user', 'quiz.formation', 'answers.question.answers', 'certificate']));
     }
 

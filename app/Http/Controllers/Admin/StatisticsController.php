@@ -7,17 +7,19 @@ use App\Models\Formation;
 use App\Models\QuizAttempt;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class StatisticsController extends Controller
 {
     /**
-     * Statistiques globales et détaillées par formation.
+     * Statistiques globales et détaillées par formation (limitées à ses formations pour un formateur).
      */
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
         $submitted = fn (Builder $attempts) => $attempts->whereNotNull('submitted_at');
 
         $formations = Formation::query()
+            ->managedBy($request->user())
             ->withCount([
                 'enrollments',
                 'enrollments as completed_enrollments_count' => fn (Builder $enrollments) => $enrollments->whereNotNull('completed_at'),
@@ -42,7 +44,9 @@ class StatisticsController extends Controller
                     : 0,
             ]);
 
-        $attempts = QuizAttempt::query()->whereNotNull('submitted_at');
+        $attempts = QuizAttempt::query()
+            ->whereHas('quiz.formation', fn (Builder $formations) => $formations->managedBy($request->user()))
+            ->whereNotNull('submitted_at');
         $attemptsCount = (clone $attempts)->count();
         $passedCount = (clone $attempts)->where('passed', true)->count();
 

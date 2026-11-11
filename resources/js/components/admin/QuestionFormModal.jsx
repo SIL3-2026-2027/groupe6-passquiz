@@ -92,7 +92,7 @@ export default function QuestionFormModal({ quizId, question, nextPosition = 1, 
 
                 <div>
                     <div className="mb-2 flex items-center justify-between">
-                        <p className="text-sm font-medium text-slate-700">{isTrueFalse ? 'Cochez la bonne réponse' : 'Réponses (cochez la ou les bonnes réponses)'}</p>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{isTrueFalse ? 'Cochez la bonne réponse' : 'Réponses (cochez la ou les bonnes réponses)'}</p>
                         {!isTrueFalse && (
                             <Button variant="secondary" size="sm" onClick={() => form.setField('answers', [...answers, emptyAnswer()])}>
                                 + Ajouter une réponse
@@ -101,13 +101,13 @@ export default function QuestionFormModal({ quizId, question, nextPosition = 1, 
                     </div>
                     <div className="flex flex-col gap-2">
                         {answers.map((answer, index) => (
-                            <div key={answer.id ?? `new-${index}`} className={`flex items-center gap-3 rounded-lg p-2 ring-1 ${answer.is_correct ? 'bg-emerald-50 ring-emerald-300' : 'ring-slate-200'}`}>
+                            <div key={answer.id ?? `new-${index}`} className={`flex items-center gap-3 rounded-lg p-2 ring-1 ${answer.is_correct ? 'bg-emerald-50 dark:bg-emerald-950/40 ring-emerald-300 dark:ring-emerald-700' : 'ring-slate-200 dark:ring-slate-800'}`}>
                                 <input
                                     type={form.values.type === 'multiple' ? 'checkbox' : 'radio'}
                                     name="correct-answer"
                                     checked={answer.is_correct}
                                     onChange={(event) => updateAnswer(index, { is_correct: event.target.checked })}
-                                    className="size-4 text-emerald-600 focus:ring-emerald-600"
+                                    className="size-4 text-emerald-600 dark:text-emerald-400 focus:ring-emerald-600"
                                     title="Bonne réponse"
                                 />
                                 <input
@@ -115,13 +115,13 @@ export default function QuestionFormModal({ quizId, question, nextPosition = 1, 
                                     onChange={(event) => updateAnswer(index, { text: event.target.value })}
                                     placeholder={`Réponse ${index + 1}`}
                                     readOnly={isTrueFalse}
-                                    className="flex-1 rounded-md border-0 bg-white px-3 py-1.5 text-sm ring-1 ring-slate-300 focus:ring-2 focus:ring-blue-900 focus:outline-none"
+                                    className="flex-1 rounded-md border-0 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm ring-1 ring-slate-300 dark:ring-slate-700 focus:ring-2 focus:ring-blue-900 dark:focus:ring-blue-500 focus:outline-none"
                                 />
                                 <button
                                     type="button"
                                     disabled={answers.length <= 2 || isTrueFalse}
                                     onClick={() => form.setField('answers', answers.filter((_, position) => position !== index))}
-                                    className="rounded-md px-2 py-1 text-sm text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-30"
+                                    className="rounded-md px-2 py-1 text-sm text-slate-400 dark:text-slate-500 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-30"
                                     title="Supprimer"
                                 >
                                     ✕
@@ -129,7 +129,7 @@ export default function QuestionFormModal({ quizId, question, nextPosition = 1, 
                             </div>
                         ))}
                     </div>
-                    {answerErrors.length > 0 && <p className="mt-2 text-xs text-red-600">{answerErrors[0][1]}</p>}
+                    {answerErrors.length > 0 && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{answerErrors[0][1]}</p>}
                 </div>
 
                 <Textarea label="Explication (visible par l'administrateur)" rows={2} {...form.bind('explanation')} />

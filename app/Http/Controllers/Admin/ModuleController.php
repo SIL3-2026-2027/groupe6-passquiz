@@ -10,17 +10,22 @@ use App\Models\Module;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class ModuleController extends Controller
 {
     public function index(Formation $formation): AnonymousResourceCollection
     {
+        Gate::authorize('manage', $formation);
+
         return ModuleResource::collection($formation->modules()->withCount('courses')->get());
     }
 
     public function store(ModuleRequest $request, Formation $formation): JsonResponse
     {
+        Gate::authorize('manage', $formation);
+
         $module = $formation->modules()->create($request->validated());
 
         return (new ModuleResource($module))->response()->setStatusCode(Response::HTTP_CREATED);
@@ -28,11 +33,15 @@ class ModuleController extends Controller
 
     public function show(Module $module): ModuleResource
     {
+        Gate::authorize('manage', $module->formation);
+
         return new ModuleResource($module->load(['formation', 'courses']));
     }
 
     public function update(ModuleRequest $request, Module $module): ModuleResource
     {
+        Gate::authorize('manage', $module->formation);
+
         $module->update($request->validated());
 
         return new ModuleResource($module);
@@ -40,6 +49,8 @@ class ModuleController extends Controller
 
     public function destroy(Module $module): Response
     {
+        Gate::authorize('manage', $module->formation);
+
         $files = $module->courses()->whereNotNull('pdf_path')->pluck('pdf_path')->all();
 
         $module->delete();

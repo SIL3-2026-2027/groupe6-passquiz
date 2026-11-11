@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['formation_id', 'title', 'description', 'passing_score', 'time_limit_minutes', 'max_attempts', 'retry_delay_minutes', 'requires_course_completion', 'shuffle_questions', 'shuffle_answers', 'is_published'])]
+#[Fillable(['formation_id', 'module_id', 'title', 'description', 'passing_score', 'time_limit_minutes', 'max_attempts', 'retry_delay_minutes', 'requires_course_completion', 'shuffle_questions', 'shuffle_answers', 'is_published'])]
 class Quiz extends Model
 {
     /** @use HasFactory<QuizFactory> */
@@ -51,6 +51,24 @@ class Quiz extends Model
     public function formation(): BelongsTo
     {
         return $this->belongsTo(Formation::class);
+    }
+
+    /**
+     * Module évalué par ce quiz ; null pour l'évaluation finale de la formation.
+     *
+     * @return BelongsTo<Module, $this>
+     */
+    public function module(): BelongsTo
+    {
+        return $this->belongsTo(Module::class);
+    }
+
+    /**
+     * L'évaluation finale est le quiz de la formation qui n'est rattaché à aucun module.
+     */
+    public function isFinal(): bool
+    {
+        return $this->module_id === null;
     }
 
     /**

@@ -26,7 +26,14 @@ class QuizRequest extends FormRequest
         return [
             'formation_id' => [
                 'required', 'integer', 'exists:formations,id',
-                Rule::unique('quizzes', 'formation_id')->ignore($this->route('quiz')),
+                Rule::when(! $this->filled('module_id'), [
+                    Rule::unique('quizzes', 'formation_id')->whereNull('module_id')->ignore($this->route('quiz')),
+                ]),
+            ],
+            'module_id' => [
+                'nullable', 'integer',
+                Rule::exists('modules', 'id')->where('formation_id', $this->integer('formation_id')),
+                Rule::unique('quizzes', 'module_id')->ignore($this->route('quiz')),
             ],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -49,7 +56,9 @@ class QuizRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'formation_id.unique' => 'Cette formation possède déjà une évaluation.',
+            'formation_id.unique' => 'Cette formation possède déjà une évaluation finale.',
+            'module_id.exists' => 'Ce module n\'appartient pas à la formation choisie.',
+            'module_id.unique' => 'Ce module possède déjà un quiz.',
         ];
     }
 }

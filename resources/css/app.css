@@ -1,5 +1,12 @@
 @import 'tailwindcss';
 
+/* Mode sombre piloté par la classe `dark` sur <html> (bouton soleil/lune), et non par le seul réglage du système. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+    color-scheme: dark;
+}
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../js/**/*.jsx';
@@ -7,4 +14,132 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Contenu des cours (Markdown converti en HTML par l'API). */
+.course-content {
+    @apply leading-relaxed text-slate-800;
+
+    & > * + * {
+        @apply mt-4;
+    }
+
+    & h1,
+    & h2,
+    & h3,
+    & h4 {
+        @apply mt-8 font-bold text-slate-900;
+    }
+
+    & h1 {
+        @apply text-2xl;
+    }
+
+    & h2 {
+        @apply text-xl;
+    }
+
+    & h3 {
+        @apply border-b border-slate-200 pb-1 text-lg text-blue-900;
+    }
+
+    & > :first-child {
+        @apply mt-0;
+    }
+
+    & ul {
+        @apply list-disc pl-6;
+    }
+
+    & ol {
+        @apply list-decimal pl-6;
+    }
+
+    & li + li {
+        @apply mt-1;
+    }
+
+    & a {
+        @apply text-blue-900 underline;
+    }
+
+    & strong {
+        @apply font-semibold text-slate-900;
+    }
+
+    & blockquote {
+        @apply rounded-r-lg border-l-4 border-blue-900 bg-blue-50 px-4 py-3 text-slate-700;
+    }
+
+    & blockquote > * + * {
+        @apply mt-2;
+    }
+
+    & :not(pre) > code {
+        @apply rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.9em] text-pink-700;
+    }
+
+    & pre {
+        @apply overflow-x-auto rounded-lg bg-slate-900 p-4 font-mono text-sm leading-normal text-slate-100;
+    }
+
+    & table {
+        @apply block w-full overflow-x-auto text-left text-sm;
+        border-collapse: collapse;
+    }
+
+    & th {
+        @apply bg-slate-100 font-semibold text-slate-900;
+    }
+
+    & th,
+    & td {
+        @apply border border-slate-200 px-3 py-2 align-top;
+    }
+
+    & hr {
+        @apply border-slate-200;
+    }
+
+    @variant dark {
+        @apply text-slate-200;
+
+        & h1,
+        & h2,
+        & h3,
+        & h4,
+        & strong {
+            @apply text-slate-100;
+        }
+
+        & h3 {
+            @apply border-slate-800 text-blue-300;
+        }
+
+        & a {
+            @apply text-blue-300;
+        }
+
+        & blockquote {
+            @apply border-blue-500 bg-blue-950/50 text-slate-300;
+        }
+
+        & :not(pre) > code {
+            @apply bg-slate-800 text-pink-300;
+        }
+
+        & pre {
+            @apply bg-slate-950 ring-1 ring-slate-800;
+        }
+
+        & th {
+            @apply bg-slate-800 text-slate-100;
+        }
+
+        & th,
+        & td,
+        & hr {
+            @apply border-slate-800;
+        }
+    }
 }

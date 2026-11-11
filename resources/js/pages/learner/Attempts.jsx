@@ -17,10 +17,13 @@ export default function Attempts() {
                 <EmptyState title="Aucune évaluation passée" action={<Button to="/formations">Voir les formations</Button>} />
             ) : (
                 <>
-                    <Table headers={['Formation', 'Tentative', 'Date', 'Score', 'Statut', '']}>
+                    <Table headers={['Évaluation', 'Tentative', 'Date', 'Score', 'Statut', '']}>
                         {data?.map((attempt) => (
                             <tr key={attempt.id}>
-                                <Td className="font-semibold text-slate-900">{attempt.quiz.formation.title}</Td>
+                                <Td>
+                                    <p className="font-semibold text-slate-900 dark:text-slate-100">{attempt.quiz.title}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">Formation {attempt.quiz.formation.title}</p>
+                                </Td>
                                 <Td>n° {attempt.attempt_number}</Td>
                                 <Td>{formatDate(attempt.submitted_at ?? attempt.started_at, true)}</Td>
                                 <Td className="font-semibold">{attempt.score !== null ? `${attempt.score} %` : '—'}</Td>

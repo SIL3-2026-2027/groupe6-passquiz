@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\FormationLevel;
+use App\Enums\UserRole;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -32,8 +33,37 @@ class FormationRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'level' => ['required', Rule::enum(FormationLevel::class)],
             'is_published' => ['sometimes', 'boolean'],
+            'trainer_id' => ['sometimes', 'nullable', 'integer', Rule::exists('users', 'id')->where('role', UserRole::Trainer->value)],
             'image' => ['nullable', 'image', 'max:2048'],
             'remove_image' => ['sometimes', 'boolean'],
+        ];
+    }
+
+    /**
+     * Attributs à enregistrer : seul l'administrateur publie une formation et choisit son formateur.
+     *
+     * @return array<string, mixed>
+     */
+    public function formationAttributes(): array
+    {
+        $attributes = $this->safe()->except(['image', 'remove_image']);
+
+        if (! $this->user()->isAdmin()) {
+            unset($attributes['is_published'], $attributes['trainer_id']);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'trainer_id.exists' => 'Le formateur choisi n\'existe pas.',
         ];
     }
 

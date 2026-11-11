@@ -6,6 +6,7 @@ use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * @mixin Course
@@ -25,6 +26,10 @@ class CourseResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'content' => $this->content,
+            'content_html' => $this->when(
+                $request->routeIs('courses.show') && $this->content !== null,
+                fn () => Str::markdown($this->content, ['html_input' => 'escape', 'allow_unsafe_links' => false]),
+            ),
             'video_url' => $this->video_url,
             'pdf_url' => $this->pdf_path ? Storage::disk('public')->url($this->pdf_path) : null,
             'duration_minutes' => $this->duration_minutes,

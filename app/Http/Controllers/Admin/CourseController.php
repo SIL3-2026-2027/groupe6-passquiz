@@ -10,17 +10,22 @@ use App\Models\Module;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
     public function index(Module $module): AnonymousResourceCollection
     {
+        Gate::authorize('manage', $module->formation);
+
         return CourseResource::collection($module->courses);
     }
 
     public function store(CourseRequest $request, Module $module): JsonResponse
     {
+        Gate::authorize('manage', $module->formation);
+
         $course = $module->courses()->make($request->safe()->except(['pdf', 'remove_pdf']));
 
         if ($request->hasFile('pdf')) {
@@ -34,11 +39,15 @@ class CourseController extends Controller
 
     public function show(Course $course): CourseResource
     {
+        Gate::authorize('manage', $course->module->formation);
+
         return new CourseResource($course->load('module.formation'));
     }
 
     public function update(CourseRequest $request, Course $course): CourseResource
     {
+        Gate::authorize('manage', $course->module->formation);
+
         $course->fill($request->safe()->except(['pdf', 'remove_pdf']));
 
         if ($request->hasFile('pdf') || $request->boolean('remove_pdf')) {
@@ -58,6 +67,8 @@ class CourseController extends Controller
 
     public function destroy(Course $course): Response
     {
+        Gate::authorize('manage', $course->module->formation);
+
         if ($course->pdf_path) {
             Storage::disk('public')->delete($course->pdf_path);
         }

@@ -8,6 +8,7 @@ use App\Models\Formation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Gate;
 
 class FormationLearnerController extends Controller
 {
@@ -16,6 +17,8 @@ class FormationLearnerController extends Controller
      */
     public function __invoke(Request $request, Formation $formation): AnonymousResourceCollection
     {
+        Gate::authorize('manage', $formation);
+
         $courseIds = $formation->courses()->pluck('courses.id');
 
         $learners = $formation->learners()

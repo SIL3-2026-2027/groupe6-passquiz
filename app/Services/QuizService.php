@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\QuestionType;
 use App\Models\Answer;
+use App\Models\Module;
 use App\Models\Question;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
@@ -68,8 +69,9 @@ class QuizService
     /**
      * Raison pour laquelle l'apprenant ne peut pas démarrer une nouvelle tentative, ou null s'il le peut.
      *
-     * Règles appliquées dans l'ordre : inscription, cours terminés, évaluation déjà réussie,
-     * nombre maximal de tentatives, délai avant de recommencer.
+     * Règles appliquées dans l'ordre : inscription, cours terminés (ceux du module pour un quiz de module,
+     * toute la formation pour l'évaluation finale), modules validés (évaluation finale, EF-11),
+     * évaluation déjà réussie, nombre maximal de tentatives, délai avant de recommencer.
      *
      * @param  Collection<int, QuizAttempt>  $attempts  Tentatives de l'apprenant pour cette évaluation.
      */
@@ -79,8 +81,19 @@ class QuizService
             return 'Vous devez être inscrit à la formation pour passer cette évaluation.';
         }
 
-        if ($quiz->requires_course_completion && $this->progress->summary($user, $quiz->formation)['percent'] < 100) {
-            return 'Terminez tous les cours de la formation avant de passer l\'évaluation.';
+        if ($quiz->isFinal()) {
+            if ($quiz->requires_course_completion && $this->progress->summary($user, $quiz->formation)['percent'] < 100) {
+                return 'Terminez tous les cours de la formation avant de passer l\'évaluation finale.';
+            }
+
+            $modulesToValidate = $this->progress->modulesToValidate($user, $quiz->formation);
+
+            if ($modulesToValidate->isNotEmpty()) {
+                return 'Réussissez d\'abord le quiz de chaque module avant l\'évaluation finale (reste : '
+                    .$modulesToValidate->map(fn (Module $module): string => "module {$module->number}")->join(', ').').';
+            }
+        } elseif ($quiz->requires_course_completion && ! $this->progress->hasCompletedModule($user, $quiz->module)) {
+            return 'Terminez tous les cours du module avant de passer son quiz.';
         }
 
         if ($attempts->contains('passed', true)) {
@@ -200,7 +213,7 @@ class QuizService
                 'submitted_at' => now(),
             ]);
 
-            if ($attempt->passed) {
+            if ($attempt->passed && $attempt->quiz->isFinal() && $this->progress->modulesToValidate($attempt->user, $attempt->quiz->formation)->isEmpty()) {
                 $this->certificates->issueForAttempt($attempt);
             }
         });

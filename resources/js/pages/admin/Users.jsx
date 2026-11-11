@@ -68,8 +68,8 @@ export default function Users() {
                         {data?.map((user) => (
                             <tr key={user.id}>
                                 <Td>
-                                    <p className="font-semibold text-slate-900">{user.name}</p>
-                                    <p className="text-xs text-slate-500">{user.email}</p>
+                                    <p className="font-semibold text-slate-900 dark:text-slate-100">{user.name}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">{user.email}</p>
                                 </Td>
                                 <Td>
                                     <Badge color={roleColors[user.role]}>{roleLabels[user.role]}</Badge>
@@ -86,7 +86,7 @@ export default function Users() {
                                         Modifier
                                     </Button>
                                     {user.id !== currentUser.id && (
-                                        <Button variant="ghost" size="sm" className="text-red-600" onClick={() => remove(user)}>
+                                        <Button variant="ghost" size="sm" className="text-red-600 dark:text-red-400" onClick={() => remove(user)}>
                                             Supprimer
                                         </Button>
                                     )}
@@ -94,7 +94,7 @@ export default function Users() {
                             </tr>
                         ))}
                     </Table>
-                    {data?.length === 0 && <p className="mt-4 text-center text-sm text-slate-500">Aucun utilisateur trouvé.</p>}
+                    {data?.length === 0 && <p className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">Aucun utilisateur trouvé.</p>}
                     <Pagination meta={meta} onPageChange={(page) => setFilters({ ...filters, page })} />
                 </>
             )}

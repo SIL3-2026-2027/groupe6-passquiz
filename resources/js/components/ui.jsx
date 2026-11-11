@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 
 const buttonVariants = {
-    primary: 'bg-blue-900 text-white hover:bg-blue-800 focus-visible:outline-blue-900',
-    secondary: 'bg-white text-slate-700 ring-1 ring-slate-300 ring-inset hover:bg-slate-50',
+    primary: 'bg-blue-900 dark:bg-blue-600 text-white hover:bg-blue-800 dark:hover:bg-blue-500 focus-visible:outline-blue-900 dark:focus-visible:outline-blue-500',
+    secondary: 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-300 dark:ring-slate-700 ring-inset hover:bg-slate-50 dark:hover:bg-slate-800',
     danger: 'bg-red-600 text-white hover:bg-red-500 focus-visible:outline-red-600',
     success: 'bg-emerald-600 text-white hover:bg-emerald-500 focus-visible:outline-emerald-600',
-    ghost: 'text-slate-600 hover:bg-slate-100',
+    ghost: 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800',
 };
 
 const buttonSizes = {
@@ -44,7 +44,7 @@ export function Spinner({ className = 'size-6' }) {
 
 export function Loading({ label = 'Chargement...' }) {
     return (
-        <div className="flex items-center justify-center gap-3 py-16 text-slate-500">
+        <div className="flex items-center justify-center gap-3 py-16 text-slate-500 dark:text-slate-400">
             <Spinner />
             <span>{label}</span>
         </div>
@@ -53,10 +53,10 @@ export function Loading({ label = 'Chargement...' }) {
 
 export function Alert({ type = 'error', children, className = '' }) {
     const styles = {
-        error: 'bg-red-50 text-red-800 ring-red-200',
-        success: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
-        info: 'bg-blue-50 text-blue-800 ring-blue-200',
-        warning: 'bg-amber-50 text-amber-800 ring-amber-200',
+        error: 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 ring-red-200 dark:ring-red-800',
+        success: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 ring-emerald-200 dark:ring-emerald-800',
+        info: 'bg-blue-50 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 ring-blue-200 dark:ring-blue-800',
+        warning: 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 ring-amber-200 dark:ring-amber-800',
     };
 
     if (!children) {
@@ -69,7 +69,7 @@ export function Alert({ type = 'error', children, className = '' }) {
 export function Card({ className = '', children }) {
     const padding = /(^|\s)p-0(\s|$)/.test(className) ? '' : 'p-5';
 
-    return <div className={`rounded-xl bg-white shadow-sm ring-1 ring-slate-200 ${padding} ${className}`}>{children}</div>;
+    return <div className={`rounded-xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800 ${padding} ${className}`}>{children}</div>;
 }
 
 export function PageHeader({ title, subtitle, actions, back }) {
@@ -77,12 +77,12 @@ export function PageHeader({ title, subtitle, actions, back }) {
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 {back && (
-                    <Link to={back.to} className="mb-2 inline-block text-sm text-slate-500 hover:text-blue-900">
+                    <Link to={back.to} className="mb-2 inline-block text-sm text-slate-500 dark:text-slate-400 hover:text-blue-900 dark:hover:text-blue-300">
                         ← {back.label}
                     </Link>
                 )}
-                <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-                {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{title}</h1>
+                {subtitle && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>}
             </div>
             {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
         </div>
@@ -90,12 +90,12 @@ export function PageHeader({ title, subtitle, actions, back }) {
 }
 
 const badgeColors = {
-    gray: 'bg-slate-100 text-slate-700',
-    blue: 'bg-blue-100 text-blue-800',
-    green: 'bg-emerald-100 text-emerald-800',
-    red: 'bg-red-100 text-red-800',
-    amber: 'bg-amber-100 text-amber-800',
-    purple: 'bg-purple-100 text-purple-800',
+    gray: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300',
+    blue: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300',
+    green: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300',
+    red: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300',
+    amber: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300',
+    purple: 'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300',
 };
 
 export function Badge({ color = 'gray', children }) {
@@ -112,16 +112,23 @@ export function AttemptStatusBadge({ attempt }) {
     return <Badge color={colors[attempt.status]}>{attempt.status_label}</Badge>;
 }
 
+/**
+ * Une formation en brouillon attend la validation d'un administrateur avant d'être visible des apprenants.
+ */
+export function FormationStatusBadge({ formation }) {
+    return formation.is_published ? <Badge color="green">Publiée</Badge> : <Badge color="amber">En attente de validation</Badge>;
+}
+
 export function ProgressBar({ percent = 0, size = 'md' }) {
     const height = size === 'sm' ? 'h-1.5' : 'h-2.5';
-    const color = percent === 100 ? 'bg-emerald-500' : 'bg-blue-900';
+    const color = percent === 100 ? 'bg-emerald-500' : 'bg-blue-900 dark:bg-blue-600';
 
     return (
         <div className="flex items-center gap-3">
-            <div className={`w-full overflow-hidden rounded-full bg-slate-200 ${height}`}>
+            <div className={`w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700 ${height}`}>
                 <div className={`${height} rounded-full ${color} transition-all`} style={{ width: `${percent}%` }} />
             </div>
-            <span className="w-12 shrink-0 text-right text-sm font-semibold text-slate-700">{percent} %</span>
+            <span className="w-12 shrink-0 text-right text-sm font-semibold text-slate-700 dark:text-slate-300">{percent} %</span>
         </div>
     );
 }
@@ -129,18 +136,18 @@ export function ProgressBar({ percent = 0, size = 'md' }) {
 export function StatCard({ label, value, hint }) {
     return (
         <Card>
-            <p className="text-sm font-medium text-slate-500">{label}</p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
-            {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
+            <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
+            {hint && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{hint}</p>}
         </Card>
     );
 }
 
 export function EmptyState({ title, description, action }) {
     return (
-        <div className="rounded-xl border-2 border-dashed border-slate-200 px-6 py-12 text-center">
-            <p className="font-semibold text-slate-700">{title}</p>
-            {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
+        <div className="rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 px-6 py-12 text-center">
+            <p className="font-semibold text-slate-700 dark:text-slate-300">{title}</p>
+            {description && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p>}
             {action && <div className="mt-4">{action}</div>}
         </div>
     );
@@ -150,20 +157,20 @@ function FieldWrapper({ label, error, hint, htmlFor, children }) {
     return (
         <div className="flex flex-col gap-1.5">
             {label && (
-                <label htmlFor={htmlFor} className="text-sm font-medium text-slate-700">
+                <label htmlFor={htmlFor} className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     {label}
                 </label>
             )}
             {children}
-            {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
-            {error && <p className="text-xs text-red-600">{error}</p>}
+            {hint && !error && <p className="text-xs text-slate-500 dark:text-slate-400">{hint}</p>}
+            {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
         </div>
     );
 }
 
 const inputClasses = (error) =>
-    `block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 shadow-xs ring-1 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:outline-none ${
-        error ? 'ring-red-400 focus:ring-red-500' : 'ring-slate-300 focus:ring-blue-900'
+    `block w-full rounded-lg border-0 bg-white dark:bg-slate-800/60 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 shadow-xs ring-1 ring-inset placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-inset focus:outline-none ${
+        error ? 'ring-red-400 focus:ring-red-500' : 'ring-slate-300 dark:ring-slate-700 focus:ring-blue-900 dark:focus:ring-blue-500'
     }`;
 
 export function Input({ label, error, hint, id, name, ...props }) {
@@ -205,13 +212,13 @@ export function Select({ label, error, hint, id, name, options, placeholder, ...
 
 export function Checkbox({ label, checked, onChange, name }) {
     return (
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
             <input
                 type="checkbox"
                 name={name}
                 checked={checked}
                 onChange={(event) => onChange(event.target.checked)}
-                className="size-4 rounded border-slate-300 text-blue-900 focus:ring-blue-900"
+                className="size-4 rounded border-slate-300 dark:border-slate-700 text-blue-900 dark:text-blue-300 focus:ring-blue-900 dark:focus:ring-blue-500"
             />
             {label}
         </label>
@@ -227,15 +234,15 @@ export function Modal({ open, title, onClose, children, footer, size = 'lg' }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 sm:items-center">
-            <div className={`my-8 w-full ${widths[size]} rounded-xl bg-white shadow-xl`}>
-                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                    <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-                    <button type="button" onClick={onClose} className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Fermer">
+            <div className={`my-8 w-full ${widths[size]} rounded-xl bg-white dark:bg-slate-900 shadow-xl`}>
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-4">
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
+                    <button type="button" onClick={onClose} className="rounded-md p-1 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-400" aria-label="Fermer">
                         ✕
                     </button>
                 </div>
                 <div className="max-h-[70vh] overflow-y-auto px-5 py-4">{children}</div>
-                {footer && <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-3">{footer}</div>}
+                {footer && <div className="flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800 px-5 py-3">{footer}</div>}
             </div>
         </div>
     );
@@ -247,7 +254,7 @@ export function Pagination({ meta, onPageChange }) {
     }
 
     return (
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
+        <div className="mt-4 flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
             <span>
                 {meta.from}–{meta.to} sur {meta.total}
             </span>
@@ -273,18 +280,18 @@ export function Pagination({ meta, onPageChange }) {
 
 export function Table({ headers, children, empty }) {
     return (
-        <div className="overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-            <table className="min-w-full divide-y divide-slate-200 text-sm">
-                <thead className="bg-slate-50">
+        <div className="overflow-x-auto rounded-xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-800/40">
                     <tr>
                         {headers.map((header) => (
-                            <th key={header} className="px-4 py-3 text-left font-semibold whitespace-nowrap text-slate-600">
+                            <th key={header} className="px-4 py-3 text-left font-semibold whitespace-nowrap text-slate-600 dark:text-slate-400">
                                 {header}
                             </th>
                         ))}
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">{children}</tbody>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">{children}</tbody>
             </table>
             {empty}
         </div>
@@ -293,7 +300,7 @@ export function Table({ headers, children, empty }) {
 
 export function Td({ className = '', children, ...props }) {
     return (
-        <td className={`px-4 py-3 align-middle text-slate-700 ${className}`} {...props}>
+        <td className={`px-4 py-3 align-middle text-slate-700 dark:text-slate-300 ${className}`} {...props}>
             {children}
         </td>
     );

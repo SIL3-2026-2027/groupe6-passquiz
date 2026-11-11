@@ -1,0 +1,2638 @@
+{
+  "modules": [
+    {
+      "pdf": "Module_01_Introduction_React_JSX_Cours.pdf",
+      "courses": [
+        {
+          "title": "Pourquoi React ?",
+          "description": "React s'appuie sur HTML, CSS et JavaScript : il ne les remplace pas, il les organise.",
+          "duration_minutes": 30,
+          "position": 1,
+          "content": "### React en une phrase\n\n**React** est une bibliothèque JavaScript (Facebook, 2013) qui sert à une seule chose : construire des **interfaces utilisateur**.\n\n- **Déclaratif** : vous décrivez ce que vous voulez voir, React met l'écran à jour\n- **Basé sur les composants** : des briques réutilisables qu'on assemble\n- **DOM virtuel** : React ne touche la page que là où c'est nécessaire\n- **Grande communauté** : outils, bibliothèques, offres d'emploi\n\n> **Bibliothèque ≠ framework** — React gère l'affichage. Pour la navigation, les appels API ou l'état global, on lui ajoute d'autres outils (React Router, Axios…). Angular, lui, fournit tout d'un bloc.\n\n### Impératif ou déclaratif ?\n\n**Sans React (impératif)**\n\n```js\nconst p = document\n  .getElementById(\"total\");\np.textContent = total;\n// à répéter partout...\n```\n\n- On dit **COMMENT** modifier la page\n- Le code devient vite difficile à suivre\n\n**Avec React (déclaratif)**\n\n```jsx\nfunction Total({ total }) {\n  return <p>{total}</p>;\n}\n// React met à jour l'écran\n```\n\n- On décrit **CE QUE** l'on veut voir\n- React s'occupe de mettre à jour le DOM\n\n### DOM réel et DOM virtuel\n\n**DOM réel (navigateur)**\n\n- Arbre de la page : chaque balise est un nœud\n- Le modifier oblige le navigateur à recalculer la mise en page (**layout**) et à redessiner (**repaint**)\n- Des milliers de modifications par seconde = page qui rame\n\n**DOM virtuel (React)**\n\n- **1. Création** : une copie légère en mémoire (objets JavaScript)\n- **2. Comparaison (diffing)** : nouvelle copie vs ancienne\n- **3. Réconciliation** : seules les différences sont appliquées au vrai DOM\n\n> **Pourquoi c'est rapide ?** — Comparer des objets JavaScript coûte peu. Redessiner la page coûte cher. React fait donc le calcul en mémoire et ne touche l'écran qu'au minimum.\n\n### React, Angular ou Vue ?\n\n|   | React | Angular | Vue |\n|---|---|---|---|\n| Type | Bibliothèque | Framework complet | Framework progressif |\n| Langage | JavaScript / JSX | TypeScript | JavaScript |\n| Apprentissage | Moyen | Élevé | Facile |\n| Idéal pour | Applications complexes et modulaires | Applications d'entreprise | Applications légères et rapides |\n\n> **Pour PassQuiz** — Le cahier des charges impose React (+ React Router + Axios) pour l'interface, et Laravel pour l'API. React n'affiche que l'interface : toute la logique sensible (correction, chrono, tentatives) reste côté serveur.\n\n### Qu'est-ce qu'un composant ?\n\nUn composant est une brique d'interface réutilisable : **une fonction JavaScript qui retourne ce qu'il faut afficher**.\n\n- Son nom commence par une **majuscule**\n- Il retourne du **JSX**\n- On l'utilise comme une balise HTML\n\n```jsx\nfunction Bonjour() {\n  return <h1>Bonjour !</h1>;\n}\n\n// Utilisation :\n<Bonjour />\n<Bonjour />\n```\n\n> **Analogie : les briques LEGO** — Une même brique sert cent fois. On assemble de petites pièces simples pour construire une grande interface.\n\n### Architecture : un arbre de composants\n\n- `main.jsx` monte l'application dans la page\n- `App` est le composant **racine**\n- Chaque composant peut en contenir d'autres\n- Un même composant (`Produit`) peut être affiché plusieurs fois\n\n```text\nmain.jsx\n└─ <App />\n   ├─ <Header />\n   ├─ <Liste />\n   │  ├─ <Produit />\n   │  ├─ <Produit />\n   │  └─ <Produit />\n   └─ <Footer />\n```"
+        },
+        {
+          "title": "Installer et structurer un projet",
+          "description": "Node.js + npm pour les outils, Vite pour créer et lancer le projet.",
+          "duration_minutes": 20,
+          "position": 2,
+          "content": "### Installer Node.js (Windows)\n\nNode.js exécute les outils de développement ; **npm** installe les bibliothèques.\n\n1. **Télécharger** : nodejs.org → version LTS (fichier .msi)\n2. **Installer** : Suivre l'assistant, garder les options par défaut\n3. **Vérifier** : Ouvrir PowerShell ou le terminal de VS Code\n\n```bash\nnode --version\nnpm --version\n```\n\n> **Linux / macOS** — Linux : dépôt NodeSource puis `sudo apt install nodejs`. macOS : `brew install node`.\n\n### Créer le projet avec Vite\n\n1. **Créer** : le projet à partir du modèle React\n2. **Entrer** : dans le dossier\n3. **Installer** : les dépendances (dossier node_modules)\n4. **Lancer** : le serveur de développement → http://localhost:5173\n\n```bash\nnpm create vite@latest boutique -- --template react\ncd boutique\nnpm install\nnpm run dev\n```\n\n> **Pourquoi Vite ?** — Démarrage quasi instantané et rechargement à chaud. Create React App est aujourd'hui obsolète.\n\n### Organisation d'un projet React\n\n- `index.html` : la page unique où React s'affiche (`<div id=\"root\">`)\n- `package.json` : dépendances et commandes (`dev`, `build`)\n- `src/main.jsx` : point d'entrée, monte `<App />`\n- `src/App.jsx` : composant principal\n- `components/` : **un fichier par composant**\n\n```text\nmon-app/\n├─ index.html\n├─ package.json\n├─ vite.config.js\n├─ public/\n└─ src/\n   ├─ main.jsx\n   ├─ App.jsx\n   ├─ App.css\n   └─ components/\n```\n\n### Le point d'entrée : main.jsx\n\n- Récupère la `<div id=\"root\">` de `index.html`\n- Y « monte » le composant `App`\n- Tout le reste de l'application part de `App`\n\n```jsx\nimport React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport App from './App';\nimport './index.css';\n\nReactDOM.createRoot(\n  document.getElementById('root')\n).render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>\n);\n```\n\n> **Single Page Application** — Une seule page HTML : React remplace le contenu de `#root` sans recharger la page."
+        },
+        {
+          "title": "Le JSX : du HTML dans JavaScript",
+          "description": "Le JSX ressemble à du HTML, mais c'est du JavaScript.",
+          "duration_minutes": 35,
+          "position": 3,
+          "content": "### Le JSX en pratique\n\n- Les accolades `{ }` insèrent une **expression** JavaScript\n- Un composant retourne **un seul élément parent**\n- Le navigateur ne comprend pas le JSX : Vite le transforme\n\n```jsx\nconst nom = \"Awa\";\n\nfunction Carte() {\n  return (\n    <div className=\"carte\">\n      <h2>Bonjour {nom}</h2>\n      <p>{2 + 3} produits</p>\n    </div>\n  );\n}\n```\n\n> **Ce que devient le JSX** — `<h1>Bonjour</h1>` est compilé en `React.createElement('h1', null, 'Bonjour')`.\n\n### HTML ou JSX : ce qui change\n\n|   | HTML | JSX |\n|---|---|---|\n| Classe CSS | `class=\"carte\"` | `className=\"carte\"` |\n| Balise sans contenu | `<img src=\"a.png\">` | `<img src=\"a.png\" />` |\n| Attribut d'étiquette | `for=\"nom\"` | `htmlFor=\"nom\"` |\n| Événement | `onclick=\"f()\"` | `onClick={f}` |\n| Style en ligne | `style=\"color:red\"` | `style={{ color: \"red\" }}` |\n| Commentaire | `<!-- note -->` | `{/* note */}` |\n\n> **Pourquoi className ?** — `class` et `for` sont des mots réservés de JavaScript : le JSX doit utiliser d'autres noms.\n\n### Plusieurs éléments : le Fragment\n\n- Une fonction ne peut retourner **qu'une seule valeur**\n- `<>…</>` regroupe sans ajouter de `<div>` dans la page\n- Utile pour ne pas casser une mise en page flex ou un tableau\n\n```jsx\n// ❌ Erreur : deux éléments sans parent\nreturn (\n  <h1>Titre</h1>\n  <p>Texte</p>\n);\n\n// ✅ Fragment : un parent invisible\nreturn (\n  <>\n    <h1>Titre</h1>\n    <p>Texte</p>\n  </>\n);\n```\n\n### Rendu conditionnel\n\n- **Ternaire** `? :` : choisir entre deux affichages\n- **&&** : afficher seulement si la condition est vraie\n- **if/else** : logique plus longue, hors du JSX\n\n```jsx\n// 1. Ternaire : A ou B\n{estConnecte\n  ? <p>Bienvenue !</p>\n  : <p>Veuillez vous connecter.</p>}\n\n// 2. && : afficher ou rien\n{estConnecte && <p>Bienvenue !</p>}\n\n// 3. if/else avant le return\nlet contenu;\nif (estConnecte) contenu = <Tableau />;\nelse contenu = <Connexion />;\nreturn <div>{contenu}</div>;\n```\n\n> **Piège du &&** — `{0 && <p>…</p>}` affiche « 0 ». Écrivez `{liste.length > 0 && …}`.\n\n### TP : présentation de produits\n\nMini-projet de la Séance 1 : une boutique avec 3 produits.\n\n1. **Créer** : les composants Header, Produit et Footer\n2. **Réutiliser** : un composant Carte pour chaque produit\n3. **Afficher** : 3 produits : nom, prix, image\n4. **Assembler** : le tout dans App + ajouter le CSS\n\n```jsx\nfunction App() {\n  return (\n    <>\n      <Header />\n      <main>\n        <Produit nom=\"Sac\" />\n        <Produit nom=\"Sandales\" />\n      </main>\n      <Footer />\n    </>\n  );\n}\n```\n\n### Application PassQuiz — le squelette de l'interface\n\nPremier découpage de l'application en composants.\n\n- `Header` : logo + lien « Mon tableau de bord »\n- `Catalogue` : liste des formations publiées (EF-05)\n- `Footer` : mentions\n- Message différent selon la connexion (rendu conditionnel)\n\n```jsx\nfunction App() {\n  const estConnecte = false;\n  return (\n    <>\n      <Header />\n      <main>\n        {estConnecte\n          ? <p>Bon retour !</p>\n          : <p>Connectez-vous pour suivre\n               une formation.</p>}\n        <Catalogue />\n      </main>\n      <Footer />\n    </>\n  );\n}\n```\n\n> **Exercice** — Créez le projet `passquiz-front` avec Vite, puis ces trois composants dans `src/components/`.\n\n### À retenir\n\n- React construit l'interface avec des **composants**\n- Le **DOM virtuel** limite les mises à jour coûteuses\n- Le **JSX** décrit l'affichage dans JavaScript\n- `{ }` insère une expression JavaScript\n- Un composant = une mission, réutilisable\n\n### Pièges à éviter\n\n- Nom de composant en minuscule (`<produit />`)\n- Oublier de fermer une balise (`<img />`)\n- Écrire `class` au lieu de `className`\n- Retourner deux éléments sans parent\n- Oublier l'import du composant\n\n*Module suivant → composants, props et styles*"
+        }
+      ],
+      "number": 1,
+      "title": "Introduction à React et JSX",
+      "description": "Comprendre la logique de React, créer son projet et écrire ses premières interfaces.",
+      "quiz": {
+        "title": "Module 1 : Introduction à React et JSX",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Qu'est-ce que React ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Un serveur web",
+                "is_correct": false
+              },
+              {
+                "text": "Une bibliothèque JavaScript pour construire des interfaces utilisateur",
+                "is_correct": true
+              },
+              {
+                "text": "Un langage qui remplace JavaScript",
+                "is_correct": false
+              },
+              {
+                "text": "Un framework complet comme Angular",
+                "is_correct": false
+              }
+            ],
+            "explanation": "React est une bibliothèque centrée sur l'interface. Le routage ou les appels HTTP viennent d'autres outils (React Router, Axios)."
+          },
+          {
+            "text": "Quelles étapes font partie du fonctionnement du DOM virtuel ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Comparaison (diffing) avec la version précédente",
+                "is_correct": true
+              },
+              {
+                "text": "Rechargement complet de la page",
+                "is_correct": false
+              },
+              {
+                "text": "Mise à jour du vrai DOM uniquement là où il y a des différences",
+                "is_correct": true
+              },
+              {
+                "text": "Création d'une copie en mémoire",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Création → diffing → réconciliation. React évite justement de recharger toute la page."
+          },
+          {
+            "text": "Le navigateur exécute directement le JSX sans transformation.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. Le JSX est compilé (par Vite/Babel) en appels `React.createElement` avant d'arriver au navigateur."
+          },
+          {
+            "text": "Quelle commande crée un projet React avec Vite ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`vite new react`",
+                "is_correct": false
+              },
+              {
+                "text": "`npm create vite@latest mon-app -- --template react`",
+                "is_correct": true
+              },
+              {
+                "text": "`npx create-react-app mon-app`",
+                "is_correct": false
+              },
+              {
+                "text": "`npm install react mon-app`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "C'est la commande du cours. Create React App est obsolète pour les nouveaux projets."
+          },
+          {
+            "text": "Quel fichier est le point d'entrée qui monte `<App />` dans la page ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`src/App.jsx`",
+                "is_correct": false
+              },
+              {
+                "text": "`index.html`",
+                "is_correct": false
+              },
+              {
+                "text": "`src/main.jsx`",
+                "is_correct": true
+              },
+              {
+                "text": "`vite.config.js`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`main.jsx` appelle `createRoot(...).render(<App />)`. `index.html` contient seulement la `div#root` d'accueil."
+          },
+          {
+            "text": "Comment écrit-on l'attribut de classe CSS en JSX ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`class`",
+                "is_correct": false
+              },
+              {
+                "text": "`cssClass`",
+                "is_correct": false
+              },
+              {
+                "text": "`className`",
+                "is_correct": true
+              },
+              {
+                "text": "`styleClass`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`class` est un mot réservé de JavaScript, d'où `className`."
+          },
+          {
+            "text": "Lesquelles de ces écritures JSX sont correctes ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`<p style=\"color:red\">`",
+                "is_correct": false
+              },
+              {
+                "text": "`<img src=\"a.png\" />`",
+                "is_correct": true
+              },
+              {
+                "text": "`<label htmlFor=\"nom\">`",
+                "is_correct": true
+              },
+              {
+                "text": "`{/* note */}`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "En JSX, le style s'écrit avec un objet : `style={{ color: 'red' }}`. Une chaîne ne fonctionne pas."
+          },
+          {
+            "text": "Que fait ce code ?\n\n```jsx\nfunction Carte() {\n  return (\n    <h2>Titre</h2>\n    <p>Texte</p>\n  );\n}\n```",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Il affiche seulement le titre",
+                "is_correct": false
+              },
+              {
+                "text": "Il provoque une erreur : deux éléments sans parent",
+                "is_correct": true
+              },
+              {
+                "text": "Il affiche seulement le texte",
+                "is_correct": false
+              },
+              {
+                "text": "Il affiche le titre puis le texte",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Un composant retourne un seul élément. Il faut entourer les deux balises d'un Fragment `<>…</>` ou d'une `<div>`."
+          },
+          {
+            "text": "Si `nb` vaut 0, qu'affiche `{nb && <p>Résultats</p>}` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "« 0 »",
+                "is_correct": true
+              },
+              {
+                "text": "« Résultats »",
+                "is_correct": false
+              },
+              {
+                "text": "Rien",
+                "is_correct": false
+              },
+              {
+                "text": "Une erreur",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`0 && …` vaut 0, et React affiche les nombres. Écrivez plutôt `nb > 0 && …`."
+          },
+          {
+            "text": "Un nom de composant React doit commencer par une majuscule.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. Une balise en minuscule (`<produit />`) est interprétée comme une balise HTML, pas comme votre composant."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Module_02_Composants_Props_Styles_Cours.pdf",
+      "courses": [
+        {
+          "title": "Les composants",
+          "description": "Une fonction, une mission, un fichier.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Un composant = un fichier\n\n- **export default** : rend le composant utilisable ailleurs\n- **import** : on le récupère dans le fichier parent\n- Un composant peut être affiché autant de fois qu'on veut\n- Nom de fichier = nom du composant (`Bienvenue.jsx`)\n\n```jsx\n// src/components/Bienvenue.jsx\nfunction Bienvenue() {\n  return <h1>Bienvenue sur PassQuiz !</h1>;\n}\n\nexport default Bienvenue;\n\n\n// src/App.jsx\nimport Bienvenue from './components/Bienvenue';\n\nfunction App() {\n  return (\n    <div>\n      <Bienvenue />\n      <Bienvenue />\n    </div>\n  );\n}\n```\n\n> **Fonction ou classe ?** — Les composants « classe » existent encore, mais on écrit aujourd'hui des **fonctions** : plus courtes, et compatibles avec les Hooks.\n\n### export default ou export nommé ?\n\n**Export par défaut (un seul par fichier)**\n\n```jsx\nexport default function Header() {…}\n\n// import : nom libre\nimport Header from './Header';\n```\n\n- Idéal : **un composant par fichier**\n\n**Export nommé (plusieurs possibles)**\n\n```jsx\nexport function formatPrix(p) {…}\nexport const TVA = 0.18;\n\n// import : nom exact, entre { }\nimport { formatPrix, TVA } from './utils';\n```\n\n- Idéal : **fonctions utilitaires**, constantes\n\n> **Erreur classique** — Importer un export nommé sans accolades (ou l'inverse) donne `undefined`, et l'erreur « Element type is invalid »."
+        },
+        {
+          "title": "Les props : passer des données",
+          "description": "Les props sont aux composants ce que les paramètres sont aux fonctions.",
+          "duration_minutes": 20,
+          "position": 2,
+          "content": "### Passer et lire des props\n\n- Le parent écrit des **attributs** ; l'enfant les reçoit dans **un objet**\n- La destructuration `{ name }` rend le code plus lisible\n- Texte : `name=\"Awa\"` · autre type : `age={24}`, `actif={true}`, `liste={[1,2]}`\n\n```jsx\n// Le parent passe des valeurs\n<Welcome name=\"Awa\" />\n<Welcome name=\"Koffi\" />\n\n// Version 1 : objet props\nfunction Welcome(props) {\n  return <h1>Bienvenue, {props.name} !</h1>;\n}\n\n// Version 2 : destructuration (recommandée)\nfunction Welcome({ name }) {\n  return <h1>Bienvenue, {name} !</h1>;\n}\n```\n\n### Règle d'or : les props sont en lecture seule\n\n- Les données **descendent** : parent → enfant (flux unidirectionnel)\n- Un enfant **ne modifie jamais** ses props : `props.name = 'X'` est interdit\n- Pour changer une valeur, c'est le **parent** qui la change (avec le state, module 3)\n- Conséquence : on sait toujours d'où vient une donnée → débogage plus simple\n\n> **Analogie** — Une prop, c'est comme un argument de fonction : la fonction l'utilise, elle ne réécrit pas la variable de l'appelant.\n\n### Valeurs par défaut et validation\n\n- **Valeur par défaut** : directement dans la destructuration\n- **PropTypes** (optionnel, `npm install prop-types`) : avertit en console si une prop manque ou a le mauvais type\n- En projet pro, **TypeScript** joue ce rôle\n\n```jsx\nimport PropTypes from 'prop-types';\n\nfunction Badge({ texte, couleur = 'gris' }) {\n  return <span className={couleur}>{texte}</span>;\n}\n\nBadge.propTypes = {\n  texte: PropTypes.string.isRequired,\n  couleur: PropTypes.string,\n};\n\n// <Badge texte=\"Nouveau\" />  → couleur = 'gris'\n```\n\n### Passer une fonction en prop\n\n- Une prop peut être **n'importe quelle valeur JS**, y compris une fonction\n- C'est ainsi que l'enfant **prévient** le parent qu'il s'est passé quelque chose\n- Données ↓ par les props, événements ↑ par les fonctions\n\n```jsx\nfunction Bouton({ label, onClick }) {\n  return <button onClick={onClick}>{label}</button>;\n}\n\nfunction App() {\n  const direBonjour = () => alert('Bonjour !');\n  return <Bouton label=\"Saluer\" onClick={direBonjour} />;\n}\n```"
+        },
+        {
+          "title": "Children et composition",
+          "description": "Construire de grands composants en emboîtant des petits.",
+          "duration_minutes": 15,
+          "position": 3,
+          "content": "### La prop spéciale children\n\n- Tout ce qui est **entre** les balises ouvrante et fermante arrive dans `children`\n- Le composant fournit le **cadre**, le parent fournit le **contenu**\n- Parfait pour : cartes, modales, mises en page\n\n```jsx\nfunction Card({ title, children }) {\n  return (\n    <div className=\"card\">\n      <h2>{title}</h2>\n      <div className=\"card-body\">{children}</div>\n    </div>\n  );\n}\n\n// Utilisation\n<Card title=\"Ma carte\">\n  <p>Ce contenu est passé comme children.</p>\n  <button>Voir</button>\n</Card>\n```\n\n### Séparer les responsabilités\n\n- **Un composant = une seule mission**\n- Trop long, ou trop de tâches ? On le **découpe**\n- `Carte` affiche · `Liste` organise · `App` assemble\n- Composants « d'affichage » simples (reçoivent des props) vs composants « conteneurs » (gèrent les données)\n- Résultat : code **réutilisable, lisible et facile à tester**\n\n> **Repère pratique** — Si vous devez faire défiler l'écran pour lire un composant, il fait probablement trop de choses."
+        },
+        {
+          "title": "Styliser ses composants",
+          "description": "Quatre approches, du plus simple au plus outillé.",
+          "duration_minutes": 20,
+          "position": 4,
+          "content": "### CSS classique ou CSS Modules\n\n**CSS classique**\n\n```jsx\nimport './App.css';\n\nfunction App() {\n  return (\n    <div className=\"container\">\n      …\n    </div>\n  );\n}\n```\n\n- Simple, comme en HTML\n- Mais les classes sont **globales** : deux `.titre` peuvent entrer en conflit\n\n**CSS Modules (`.module.css`)**\n\n```jsx\nimport styles from './App.module.css';\n\nfunction App() {\n  return (\n    <div className={styles.container}>\n      …\n    </div>\n  );\n}\n```\n\n- Classes **locales** au composant : plus de conflit\n- Intégré à Vite, rien à installer\n\n### styled-components ou style en ligne\n\n**styled-components**\n\n```jsx\nimport styled from 'styled-components';\n\nconst Bouton = styled.button`\n  background: #0e7490;\n  color: white;\n  padding: 10px 20px;\n`;\n\n<Bouton>Valider</Bouton>\n```\n\n- CSS écrit **dans** le JS\n- `npm install styled-components`\n\n**Style en ligne**\n\n```jsx\n<p style={{ color: 'red',\n           fontSize: 18 }}>\n  Temps écoulé\n</p>\n```\n\n- Objet JS, propriétés en **camelCase**\n- Pratique pour un style **dynamique** (ex. largeur d'une barre de progression)\n\n### Application PassQuiz — la carte de formation\n\nLe catalogue affiche une carte par formation publiée (EF-05).\n\n- Props : `titre`, `niveau`, `nbModules`, `progression`\n- `progression` a une valeur par défaut : 0\n- La largeur de la barre est un **style dynamique**\n- Calcul (EF-10) : cours terminés ÷ total × 100\n\n```jsx\nimport styles from './FormationCard.module.css';\n\nfunction FormationCard({ titre, niveau,\n                         nbModules, progression = 0 }) {\n  return (\n    <article className={styles.carte}>\n      <h3>{titre}</h3>\n      <p>{niveau} · {nbModules} modules</p>\n      <div className={styles.barre}>\n        <div className={styles.rempli}\n             style={{ width: `${progression}%` }} />\n      </div>\n      <span>{progression} %</span>\n    </article>\n  );\n}\nexport default FormationCard;\n```\n\n> **Exercice** — Affichez 2 cartes dans `Catalogue` : Laravel (7 modules, 40 %) et React (8 modules, 0 %).\n\n### À retenir\n\n- Les **props** passent les données du parent à l'enfant\n- Elles sont en **lecture seule**\n- **children** = le contenu placé entre les balises\n- Une fonction en prop permet à l'enfant de prévenir le parent\n- CSS Modules : des classes locales sans conflit\n\n### Pièges à éviter\n\n- Modifier une prop dans l'enfant\n- Oublier `export default` ou mélanger export par défaut et export nommé\n- Passer un nombre en texte : `age=\"24\"` au lieu de `age={24}`\n- `style=\"…\"` au lieu de `style={{ … }}`\n- Un composant géant qui fait tout\n\n*Module suivant → state, événements et listes*"
+        }
+      ],
+      "number": 2,
+      "title": "Composants, props et styles",
+      "description": "Rendre ses composants réutilisables, leur passer des données et les habiller.",
+      "quiz": {
+        "title": "Module 2 : Composants, props et styles",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "À quoi servent les props ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "À passer des données d'un composant parent à un composant enfant",
+                "is_correct": true
+              },
+              {
+                "text": "À définir les routes",
+                "is_correct": false
+              },
+              {
+                "text": "À stocker l'état interne d'un composant",
+                "is_correct": false
+              },
+              {
+                "text": "À appeler une API",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les props transmettent des données du parent vers l'enfant. L'état interne, lui, c'est le state (module 3)."
+          },
+          {
+            "text": "Un composant enfant peut modifier directement la valeur de ses props.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. Les props sont en lecture seule. Pour changer une valeur, le parent modifie son state, et la nouvelle valeur redescend en prop."
+          },
+          {
+            "text": "Quelle écriture utilise correctement la destructuration des props ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`function Welcome(name) { … }`",
+                "is_correct": false
+              },
+              {
+                "text": "`function Welcome({ name }) { … }`",
+                "is_correct": true
+              },
+              {
+                "text": "`function Welcome(props.name) { … }`",
+                "is_correct": false
+              },
+              {
+                "text": "`function Welcome[name] { … }`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "La fonction reçoit un objet ; `{ name }` en extrait la propriété `name`."
+          },
+          {
+            "text": "Qu'affiche `<Badge />` ?\n\n```jsx\nfunction Badge({ texte = 'Nouveau' }) {\n  return <span>{texte}</span>;\n}\n```",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Une erreur",
+                "is_correct": false
+              },
+              {
+                "text": "Rien",
+                "is_correct": false
+              },
+              {
+                "text": "« Nouveau »",
+                "is_correct": true
+              },
+              {
+                "text": "`undefined`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Aucune prop `texte` n'est passée, donc la valeur par défaut 'Nouveau' s'applique."
+          },
+          {
+            "text": "Que contient la prop `children` de `Card` ?\n\n```jsx\n<Card title=\"A\">\n  <p>Bonjour</p>\n</Card>\n```",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Un tableau vide",
+                "is_correct": false
+              },
+              {
+                "text": "Le composant Card lui-même",
+                "is_correct": false
+              },
+              {
+                "text": "La chaîne \"A\"",
+                "is_correct": false
+              },
+              {
+                "text": "L'élément `<p>Bonjour</p>`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`children` reçoit ce qui est placé entre les balises ouvrante et fermante du composant."
+          },
+          {
+            "text": "Quelles valeurs peut-on passer en prop ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Une chaîne de caractères",
+                "is_correct": true
+              },
+              {
+                "text": "Un nombre",
+                "is_correct": true
+              },
+              {
+                "text": "Une fonction",
+                "is_correct": true
+              },
+              {
+                "text": "Un tableau d'objets",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Une prop accepte n'importe quelle valeur JavaScript. Les fonctions servent notamment à remonter des événements vers le parent."
+          },
+          {
+            "text": "Quel est l'avantage principal des CSS Modules ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Ils ne fonctionnent qu'avec Angular",
+                "is_correct": false
+              },
+              {
+                "text": "Ils rendent le CSS inutile",
+                "is_correct": false
+              },
+              {
+                "text": "Ils remplacent JavaScript",
+                "is_correct": false
+              },
+              {
+                "text": "Les classes sont locales au composant, sans conflit de noms",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Un fichier `.module.css` génère des noms de classes uniques : deux composants peuvent tous deux avoir une classe `.titre`."
+          },
+          {
+            "text": "Lesquelles de ces écritures sont correctes ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`<Prix valeur={25000} />`",
+                "is_correct": true
+              },
+              {
+                "text": "`<p style={{ fontSize: 18 }}>`",
+                "is_correct": true
+              },
+              {
+                "text": "`<p style=\"font-size:18px\">`",
+                "is_correct": false
+              },
+              {
+                "text": "`import { formatPrix } from './utils'` pour un export nommé",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Le style en ligne s'écrit avec un objet en camelCase. Une chaîne CSS ne fonctionne pas en JSX."
+          },
+          {
+            "text": "Pour qu'un enfant prévienne son parent d'un clic, le parent peut lui passer une fonction en prop.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. Les données descendent par les props, et les événements remontent par des fonctions passées en props."
+          },
+          {
+            "text": "Que signifie « un composant = une mission » ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Chaque composant ne doit être utilisé qu'une fois",
+                "is_correct": false
+              },
+              {
+                "text": "Chaque composant doit faire un appel API",
+                "is_correct": false
+              },
+              {
+                "text": "Chaque composant a une seule responsabilité ; s'il en a trop, on le découpe",
+                "is_correct": true
+              },
+              {
+                "text": "Il ne faut qu'un composant par application",
+                "is_correct": false
+              }
+            ],
+            "explanation": "C'est le principe de séparation des responsabilités : le code reste réutilisable, lisible et testable."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Module_03_State_Evenements_Listes_Cours.pdf",
+      "courses": [
+        {
+          "title": "Le state avec useState",
+          "description": "La mémoire d'un composant.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Props ou state ?\n\n**Props**\n\n- Viennent du **parent**\n- **Lecture seule** pour le composant\n- Comme les **paramètres** d'une fonction\n\n**State (état)**\n\n- Appartient au **composant** lui-même\n- Peut **changer** au cours du temps (via son setter)\n- Chaque changement **redessine** le composant (re-rendu)\n\n> **Pourquoi pas une simple variable ?** — Une variable `let` est remise à zéro à chaque rendu, et la modifier ne prévient pas React. Le state est conservé entre les rendus et déclenche la mise à jour de l'écran.\n\n### Le Hook useState\n\n- `useState(0)` : **0** est la valeur initiale\n- Retourne un tableau : **[valeur, fonction de mise à jour]**\n- On le destructure : `[count, setCount]`\n- `setCount(…)` → React relance la fonction `Counter` avec la nouvelle valeur\n\n```jsx\nimport { useState } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n\n  return (\n    <div>\n      <p>Compteur : {count}</p>\n      <button onClick={() => setCount(count + 1)}>\n        Incrémenter\n      </button>\n    </div>\n  );\n}\n```\n\n### Les règles des Hooks\n\n- Appeler les Hooks **au niveau supérieur** du composant\n- Jamais dans une **boucle**, une **condition** ou une **fonction imbriquée**\n- Les appeler seulement depuis un **composant React** ou un **Hook personnalisé** (`useXxx`)\n\n> **Pourquoi ces règles ?** — React retrouve chaque state grâce à **l'ordre d'appel** des Hooks. Si un `useState` est dans un `if`, l'ordre change d'un rendu à l'autre et les valeurs se mélangent."
+        },
+        {
+          "title": "Mettre à jour le state correctement",
+          "description": "On ne modifie pas le state : on le remplace par une nouvelle valeur.",
+          "duration_minutes": 15,
+          "position": 2,
+          "content": "### La forme fonctionnelle\n\n- `count` est **figé** pendant un rendu (closure)\n- `prev => prev + 1` reçoit la valeur **à jour**\n- À utiliser dès que la nouvelle valeur **dépend de l'ancienne**\n\n```jsx\n// ❌ Risqué : count vaut la même valeur 3 fois\nconst plusTrois = () => {\n  setCount(count + 1);\n  setCount(count + 1);\n  setCount(count + 1);\n}; // → +1 seulement\n\n// ✅ Basé sur la valeur la plus récente\nconst plusTrois = () => {\n  setCount(prev => prev + 1);\n  setCount(prev => prev + 1);\n  setCount(prev => prev + 1);\n}; // → +3\n```\n\n### State de type objet\n\n- `...prev` **copie** toutes les propriétés\n- Puis on **écrase** celle qui change\n- Sans spread, les autres champs sont **perdus**\n\n```jsx\nconst [user, setUser] = useState({\n  name: 'Awa', age: 24, city: 'Cotonou'\n});\n\n// ❌ Mutation : React ne voit rien\nuser.age = 25;\n\n// ✅ Nouvel objet avec le spread\nsetUser(prev => ({ ...prev, age: prev.age + 1 }));\n\n// ✅ Champ dynamique (formulaires)\nconst { name, value } = e.target;\nsetUser(prev => ({ ...prev, [name]: value }));\n```\n\n> **Immutabilité** — React compare l'ancienne et la nouvelle référence. Même objet = « rien n'a changé » = pas de re-rendu.\n\n### State de type tableau : les 3 opérations\n\n| Opération | Code | Méthode |\n|---|---|---|\n| Ajouter | `setItems(prev => [...prev, nouvel])` | spread |\n| Supprimer | `setItems(prev => prev.filter(i => i.id !== id))` | filter |\n| Modifier | `setItems(prev => prev.map(i => i.id === id ? { ...i, text } : i))` | map + spread |\n\n> **À éviter sur un state** — `push`, `splice`, `sort`, `reverse` modifient le tableau existant. Travaillez sur une copie : `[...prev].sort()`."
+        },
+        {
+          "title": "Gérer les événements",
+          "description": "Comme en JavaScript, mais en camelCase et avec des fonctions.",
+          "duration_minutes": 15,
+          "position": 3,
+          "content": "### Réagir à un clic\n\n- Noms en **camelCase** : `onClick`, `onChange`\n- On passe **la fonction**, on ne l'appelle pas\n- Pour passer un argument : `() => f(arg)`\n\n```jsx\nfunction ClickButton() {\n  const handleClick = () => {\n    console.log('Bouton cliqué !');\n  };\n\n  // ✅ on passe la fonction\n  return <button onClick={handleClick}>Cliquez</button>;\n}\n\n// ❌ exécutée immédiatement à chaque rendu\n<button onClick={handleClick()}>\n\n// ✅ avec un argument : fonction fléchée\n<li onClick={() => choisir(item)}>{item}</li>\n```\n\n### Les événements courants\n\n| Événement | Quand ? | Exemple |\n|---|---|---|\n| `onClick` | Clic sur l'élément | `<button onClick={valider}>` |\n| `onChange` | La valeur d'un champ change | `onChange={e => setNom(e.target.value)}` |\n| `onSubmit` | Envoi d'un formulaire | `<form onSubmit={envoyer}>` |\n| `onKeyDown` | Touche enfoncée | `if (e.key === 'Enter') …` |\n| `onFocus` / `onBlur` | Le champ prend / perd le focus | valider un champ en quittant |\n\n> **L'objet événement e** — `e.target.value` : valeur saisie · `e.preventDefault()` : empêche le rechargement de la page à l'envoi d'un formulaire."
+        },
+        {
+          "title": "Listes et clés",
+          "description": "Transformer un tableau de données en tableau d'éléments.",
+          "duration_minutes": 25,
+          "position": 4,
+          "content": "### Afficher une liste avec map()\n\n- `map()` transforme chaque **donnée** en **élément JSX**\n- Chaque élément reçoit une **key unique**\n- `filter()` avant `map()` pour n'afficher qu'une partie\n\n```jsx\nfunction TodoList() {\n  const todos = [\n    { id: 1, text: 'Faire les courses' },\n    { id: 2, text: 'Étudier React' },\n    { id: 3, text: 'Faire du sport' },\n  ];\n\n  return (\n    <ul>\n      {todos.map(todo => (\n        <li key={todo.id}>{todo.text}</li>\n      ))}\n    </ul>\n  );\n}\n```\n\n### Pourquoi une key ?\n\n- La key permet à React de **reconnaître chaque élément** d'un rendu à l'autre\n- Il sait alors lequel a été **ajouté, supprimé ou déplacé**, sans tout redessiner\n- Utilisez un **identifiant stable** venant des données (`id` en base)\n- Évitez **l'index** si l'ordre peut changer (tri, suppression, ordre aléatoire)\n\n> **Bug typique avec key={index}** — On supprime le 1er élément : tous les index se décalent, et React peut afficher une case cochée ou un texte saisi sur la mauvaise ligne.\n\n### Mini-projet : la Todo List\n\n- **2 states** : la liste et le texte saisi\n- Ajouter → spread\n- Cocher → map + spread\n- Supprimer → filter\n- Champ **contrôlé** : `value` + `onChange`\n\n```jsx\nfunction TodoList() {\n  const [todos, setTodos] = useState([]);\n  const [input, setInput] = useState('');\n\n  const addTodo = () => {\n    if (!input.trim()) return;\n    setTodos(prev => [...prev,\n      { id: Date.now(), text: input, done: false }]);\n    setInput('');\n  };\n  const toggleTodo = id => setTodos(prev => prev.map(t =>\n    t.id === id ? { ...t, done: !t.done } : t));\n  const deleteTodo = id =>\n    setTodos(prev => prev.filter(t => t.id !== id));\n\n  return (<>\n    <input value={input} onChange={e => setInput(e.target.value)} />\n    <button onClick={addTodo}>Ajouter</button>\n    <ul>{todos.map(t => (\n      <li key={t.id} className={t.done ? 'done' : ''}>\n        <span onClick={() => toggleTodo(t.id)}>{t.text}</span>\n        <button onClick={() => deleteTodo(t.id)}>✕</button>\n      </li>))}\n    </ul>\n  </>);\n}\n```\n\n> **À vous** — Ajoutez un compteur « X tâches restantes » : `todos.filter(t => !t.done).length`.\n\n### Application PassQuiz — répondre à une question\n\nChoix unique (EF-12) : on mémorise l'id de la réponse cochée.\n\n- `reponses` vient de l'API (sans `est_correcte` !)\n- State : l'id choisi, `null` au départ\n- Bouton désactivé tant que rien n'est coché\n- `key={r.id}` : l'ordre est aléatoire à chaque tentative (EF-13)\n\n```jsx\nfunction Question({ enonce, reponses, onValider }) {\n  const [choix, setChoix] = useState(null);\n\n  return (\n    <div>\n      <h3>{enonce}</h3>\n      {reponses.map(r => (\n        <label key={r.id}>\n          <input type=\"radio\" name=\"rep\"\n            checked={choix === r.id}\n            onChange={() => setChoix(r.id)} />\n          {r.texte}\n        </label>\n      ))}\n      <button disabled={choix === null}\n              onClick={() => onValider(choix)}>\n        Valider\n      </button>\n    </div>\n  );\n}\n```\n\n> **Exercice** — Adaptez au **choix multiple** : state = tableau d'ids, ajout/retrait avec filter et spread.\n\n### À retenir\n\n- Le **state** est la mémoire du composant ; le changer redessine l'écran\n- `useState` → `[valeur, setValeur]`\n- Forme fonctionnelle `prev => …` quand on dépend de l'ancienne valeur\n- Objets et tableaux : on crée une **copie**\n- Listes : `map()` + **key** unique et stable\n\n### Pièges à éviter\n\n- Muter le state : `user.age = 25`, `todos.push(x)`\n- `onClick={f()}` au lieu de `onClick={f}`\n- Oublier la key ou utiliser l'index sur une liste qui bouge\n- Appeler `useState` dans un `if`\n- Oublier `...prev` et perdre les autres champs\n\n*Module suivant → les Hooks essentiels*"
+        }
+      ],
+      "number": 3,
+      "title": "State, événements et listes",
+      "description": "Rendre l'interface vivante : réagir aux clics et afficher des données qui changent.",
+      "quiz": {
+        "title": "Module 3 : State, événements et listes",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Quelle est la différence principale entre props et state ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Il n'y en a aucune",
+                "is_correct": false
+              },
+              {
+                "text": "Le state vient du parent",
+                "is_correct": false
+              },
+              {
+                "text": "Les props viennent du parent et sont en lecture seule ; le state appartient au composant et peut changer",
+                "is_correct": true
+              },
+              {
+                "text": "Les props déclenchent un appel API",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les props sont fournies par le parent. Le state est interne au composant et se modifie avec son setter."
+          },
+          {
+            "text": "Que retourne `useState(0)` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Le nombre 0",
+                "is_correct": false
+              },
+              {
+                "text": "Un tableau `[valeur, fonctionDeMiseAJour]`",
+                "is_correct": true
+              },
+              {
+                "text": "Un objet `{ value, set }`",
+                "is_correct": false
+              },
+              {
+                "text": "Une promesse",
+                "is_correct": false
+              }
+            ],
+            "explanation": "On le destructure ensuite : `const [count, setCount] = useState(0)`."
+          },
+          {
+            "text": "Quelles règles des Hooks sont correctes ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Les appeler seulement depuis un composant React ou un Hook personnalisé",
+                "is_correct": true
+              },
+              {
+                "text": "On peut les appeler dans une boucle for",
+                "is_correct": false
+              },
+              {
+                "text": "Les appeler au niveau supérieur du composant",
+                "is_correct": true
+              },
+              {
+                "text": "On peut les appeler dans un if",
+                "is_correct": false
+              }
+            ],
+            "explanation": "React identifie chaque Hook par son ordre d'appel, qui doit rester identique d'un rendu à l'autre."
+          },
+          {
+            "text": "`count` vaut 0. Après un clic, combien vaut-il ?\n\n```jsx\nconst handle = () => {\n  setCount(count + 1);\n  setCount(count + 1);\n};\n```",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "2",
+                "is_correct": false
+              },
+              {
+                "text": "Erreur",
+                "is_correct": false
+              },
+              {
+                "text": "0",
+                "is_correct": false
+              },
+              {
+                "text": "1",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`count` vaut 0 pendant tout ce rendu : les deux appels font `setCount(1)`. Avec `prev => prev + 1`, on obtiendrait 2."
+          },
+          {
+            "text": "Comment augmenter l'âge sans perdre `name` et `city` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`setUser(user.age + 1)`",
+                "is_correct": false
+              },
+              {
+                "text": "`setUser({ age: user.age + 1 })`",
+                "is_correct": false
+              },
+              {
+                "text": "`setUser(prev => ({ ...prev, age: prev.age + 1 }))`",
+                "is_correct": true
+              },
+              {
+                "text": "`user.age = user.age + 1`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le spread copie toutes les propriétés, puis `age` est écrasé. `setUser({ age: … })` seul ferait perdre `name` et `city`."
+          },
+          {
+            "text": "Quelles opérations ne modifient PAS le tableau d'origine (donc sûres pour le state) ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`prev.filter(...)`",
+                "is_correct": true
+              },
+              {
+                "text": "`prev.push(x)`",
+                "is_correct": false
+              },
+              {
+                "text": "`prev.map(...)`",
+                "is_correct": true
+              },
+              {
+                "text": "`[...prev, x]`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`push` modifie le tableau existant. Spread, `filter` et `map` créent un nouveau tableau."
+          },
+          {
+            "text": "Quelle écriture est correcte pour exécuter `valider` au clic ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`<button onClick=\"valider\">`",
+                "is_correct": false
+              },
+              {
+                "text": "`<button onclick={valider}>`",
+                "is_correct": false
+              },
+              {
+                "text": "`<button onClick={valider}>`",
+                "is_correct": true
+              },
+              {
+                "text": "`<button onClick={valider()}>`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "On écrit `onClick` en camelCase et on passe la fonction sans l'appeler. `valider()` s'exécuterait à chaque rendu."
+          },
+          {
+            "text": "À quoi sert `e.preventDefault()` dans un `onSubmit` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "À vider le formulaire",
+                "is_correct": false
+              },
+              {
+                "text": "À empêcher le rechargement de la page",
+                "is_correct": true
+              },
+              {
+                "text": "À valider les champs",
+                "is_correct": false
+              },
+              {
+                "text": "À envoyer les données",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Par défaut, le navigateur recharge la page à l'envoi d'un formulaire. `preventDefault()` garde le contrôle dans React."
+          },
+          {
+            "text": "Utiliser l'index comme key est sans risque même si l'ordre de la liste change.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. Quand l'ordre change, les index se décalent et React peut associer un état au mauvais élément. Utilisez un id stable."
+          },
+          {
+            "text": "Dans PassQuiz, pourquoi la key des réponses doit-elle être `r.id` et non l'index ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Parce que l'index n'existe pas en JSX",
+                "is_correct": false
+              },
+              {
+                "text": "Pour le style CSS",
+                "is_correct": false
+              },
+              {
+                "text": "Parce que l'ordre des réponses est aléatoire à chaque tentative (EF-13)",
+                "is_correct": true
+              },
+              {
+                "text": "Parce que l'API l'exige",
+                "is_correct": false
+              }
+            ],
+            "explanation": "L'ordre change à chaque tentative. Avec `r.id`, chaque réponse garde la même identité quel que soit l'ordre d'affichage."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Module_04_Hooks_Essentiels_Cours.pdf",
+      "courses": [
+        {
+          "title": "useEffect : les effets de bord",
+          "description": "Tout ce qui sort du simple « calculer l'affichage ».",
+          "duration_minutes": 20,
+          "position": 1,
+          "content": "### Qu'est-ce qu'un effet de bord ?\n\nUn composant doit d'abord **calculer son JSX**. Le reste est un effet de bord, exécuté **après** l'affichage :\n\n- Appels API\n- Timers : `setInterval`, `setTimeout`\n- Abonnements à des événements (`window.addEventListener`)\n- Modifier le titre de l'onglet, logs, analytics\n\n```jsx\nimport { useEffect } from 'react';\n\nfunction Page({ titre }) {\n  useEffect(() => {\n    document.title = titre;\n  }, [titre]);\n\n  return <h1>{titre}</h1>;\n}\n```\n\n> **Pourquoi après ?** — L'écran s'affiche d'abord, sans attendre le réseau. L'effet tourne ensuite et met à jour le state si besoin.\n\n### Le tableau de dépendances\n\n| Écriture | Quand l'effet s'exécute-t-il ? | Usage |\n|---|---|---|\n| `useEffect(fn)` | Après **chaque** rendu | Rare |\n| `useEffect(fn, [])` | **Une seule fois**, après le premier rendu | Chargement initial (API) |\n| `useEffect(fn, [id])` | Au premier rendu **puis** chaque fois que `id` change | Recharger quand un paramètre change |\n\n> **Boucle infinie** — Un effet **sans tableau** qui fait un `setState` relance un rendu, qui relance l'effet, et ainsi de suite. Mettez dans le tableau **toutes** les variables utilisées dans l'effet, et rien d'autre.\n\n### Nettoyer un effet\n\n- L'effet peut **retourner une fonction** : c'est le nettoyage\n- Appelée quand le composant **disparaît**\n- … et avant de relancer l'effet si une dépendance change\n- Sans nettoyage : timers fantômes, fuites mémoire\n\n```jsx\nfunction Timer() {\n  const [seconds, setSeconds] = useState(0);\n\n  useEffect(() => {\n    const interval = setInterval(() => {\n      setSeconds(prev => prev + 1);\n    }, 1000);\n\n    // Fonction de nettoyage\n    return () => clearInterval(interval);\n  }, []);\n\n  return <div>Secondes : {seconds}</div>;\n}\n```\n\n### Appel API avec useEffect\n\n- **3 states** : données, chargement, erreur\n- La fonction `async` est **déclarée dans** l'effet\n- `[]` : on charge une seule fois\n- Toujours prévoir les 3 affichages\n\n```jsx\nfunction UserList() {\n  const [users, setUsers] = useState([]);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState(null);\n\n  useEffect(() => {\n    const fetchUsers = async () => {\n      try {\n        const res = await fetch('https://api.example.com/users');\n        if (!res.ok) throw new Error('Erreur réseau');\n        setUsers(await res.json());\n      } catch (err) {\n        setError(err.message);\n      } finally {\n        setLoading(false);\n      }\n    };\n    fetchUsers();\n  }, []);\n\n  if (loading) return <p>Chargement...</p>;\n  if (error) return <p>Erreur : {error}</p>;\n  return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>;\n}\n```\n\n> **Piège** — `useEffect(async () => …)` est interdit : l'effet doit retourner une fonction de nettoyage, pas une promesse."
+        },
+        {
+          "title": "useContext : partager sans prop drilling",
+          "description": "Des données globales accessibles partout, sans les passer de main en main.",
+          "duration_minutes": 15,
+          "position": 2,
+          "content": "### Le problème du prop drilling\n\n- On passe une prop à travers des composants **qui ne s'en servent pas**\n- Code verbeux et fragile : renommer une prop = modifier 4 fichiers\n- **Context** permet à `Avatar` de lire `user` **directement**\n\n```text\n<App user={user}>\n└─ <Layout user={user}>\n   └─ <Sidebar user={user}>\n      └─ <Avatar user={user} />\n\n// Layout et Sidebar ne font que\n// transmettre : seul Avatar\n// utilise vraiment user\n```\n\n### Créer, fournir, consommer\n\n- **createContext** : crée le « canal »\n- **Provider** : met une valeur à disposition\n- **useContext** : la lit dans n'importe quel descendant\n- Quand `value` change, les consommateurs se redessinent\n\n```jsx\nimport { createContext, useContext, useState } from 'react';\n\n// 1. Créer\nconst ThemeContext = createContext();\n\n// 2. Fournir (Provider) en haut de l'arbre\nfunction App() {\n  const [theme, setTheme] = useState('light');\n  return (\n    <ThemeContext.Provider value={{ theme, setTheme }}>\n      <Toolbar />\n    </ThemeContext.Provider>\n  );\n}\n\n// 3. Consommer n'importe où en dessous\nfunction Toolbar() {\n  const { theme, setTheme } = useContext(ThemeContext);\n  return <button onClick={() => setTheme('dark')}>{theme}</button>;\n}\n```\n\n### Bonne pratique : Provider + Hook personnalisé\n\n- Le Provider dans **son propre fichier**\n- Un Hook `useCart()` : les composants n'importent qu'une fonction\n- Context seulement pour le **vraiment global** : thème, utilisateur connecté, panier\n\n```jsx\n// CartContext.jsx\nconst CartContext = createContext();\n\nexport function CartProvider({ children }) {\n  const [cart, setCart] = useState([]);\n  const addToCart = item => setCart(prev => [...prev, item]);\n  const removeFromCart = id =>\n    setCart(prev => prev.filter(i => i.id !== id));\n  const total = cart.reduce((s, i) => s + i.price, 0);\n\n  return (\n    <CartContext.Provider\n      value={{ cart, addToCart, removeFromCart, total }}>\n      {children}\n    </CartContext.Provider>\n  );\n}\n\nexport function useCart() {\n  return useContext(CartContext);\n}\n```"
+        },
+        {
+          "title": "useRef : une boîte qui persiste",
+          "description": "Accéder au DOM, ou garder une valeur sans redessiner.",
+          "duration_minutes": 15,
+          "position": 3,
+          "content": "### Les deux usages de useRef\n\n**1. Accéder au DOM**\n\n```jsx\nconst inputRef = useRef(null);\n\nuseEffect(() => {\n  inputRef.current.focus();\n}, []);\n\nreturn <input ref={inputRef} />;\n```\n\n- `ref.current` = l'élément HTML réel\n- Focus, scroll, lecture d'un champ\n\n**2. Valeur persistante**\n\n```jsx\nconst intervalRef = useRef(null);\n\nconst start = () => {\n  intervalRef.current = setInterval(…, 1000);\n};\nconst stop = () => clearInterval(intervalRef.current);\n```\n\n- Conservée entre les rendus\n- La modifier **ne redessine pas**\n\n### useRef ou useState ?\n\n|   | useRef | useState |\n|---|---|---|\n| Déclenche un re-rendu | Non | Oui |\n| Valeur conservée entre rendus | Oui | Oui |\n| Mise à jour | `ref.current = …` (directe) | `setValeur(…)` (setter) |\n| Cas d'usage | DOM, id de timer, valeur technique | Tout ce qui s'**affiche** |\n\n> **Règle simple** — Si la valeur doit apparaître à l'écran : `useState`. Sinon : `useRef`."
+        },
+        {
+          "title": "useReducer : l'état complexe",
+          "description": "Centraliser toutes les transitions d'état dans une seule fonction.",
+          "duration_minutes": 15,
+          "position": 4,
+          "content": "### Reducer, action, dispatch\n\n- **action** : un objet `{ type, payload }` qui décrit *ce qui s'est passé*\n- **dispatch** : envoie l'action au reducer\n- **reducer** : fonction **pure**, retourne un nouvel état\n- Utile quand plusieurs valeurs changent ensemble\n\n```jsx\nimport { useReducer } from 'react';\n\n// 1. Le reducer : (état actuel, action) => nouvel état\nconst reducer = (state, action) => {\n  switch (action.type) {\n    case 'INCREMENT': return { count: state.count + 1 };\n    case 'DECREMENT': return { count: state.count - 1 };\n    case 'RESET':     return { count: 0 };\n    default:          return state;\n  }\n};\n\n// 2. Dans le composant\nfunction Counter() {\n  const [state, dispatch] = useReducer(reducer, { count: 0 });\n  return (<>\n    <p>Compteur : {state.count}</p>\n    <button onClick={() => dispatch({ type: 'INCREMENT' })}>+</button>\n    <button onClick={() => dispatch({ type: 'RESET' })}>Reset</button>\n  </>);\n}\n```"
+        },
+        {
+          "title": "useCallback et useMemo",
+          "description": "Mémoriser pour éviter le travail inutile.",
+          "duration_minutes": 15,
+          "position": 5,
+          "content": "### Mémoriser une fonction ou une valeur\n\n**useCallback → une fonction**\n\n```jsx\nconst handleClick = useCallback(() => {\n  console.log('cliqué');\n}, []);\n\n<Child onClick={handleClick} />\n```\n\n- Même fonction d'un rendu à l'autre\n- Utile si on la passe à un enfant mémoïsé ou dans des dépendances\n\n**useMemo → un résultat**\n\n```jsx\nconst somme = useMemo(() => {\n  return numbers.reduce((s, n) => s + n, 0);\n}, [numbers]);\n```\n\n- Recalcule **seulement** si `numbers` change\n- Pour les **calculs coûteux**\n\n> **Ne pas en mettre partout** — Ces Hooks ont un coût. Utilisez-les pour un vrai calcul lourd, ou quand une référence stable est nécessaire. Mesurez avec React DevTools.\n\n### Application PassQuiz — le chronomètre du quiz\n\nEF-14 : à expiration, la tentative est soumise automatiquement.\n\n- L'heure de fin `finA` vient du **serveur** (POST /quiz/{id}/demarrer)\n- Effet + **nettoyage** de l'intervalle\n- Le parent passe `onExpire` avec **useCallback** : sinon l'effet repart à chaque rendu\n- Le serveur reste juge : il refuse une soumission hors délai\n\n```jsx\nconst resteSec = fin =>\n  Math.max(0, Math.round((new Date(fin) - Date.now()) / 1000));\n\nfunction Chrono({ finA, onExpire }) {\n  const [reste, setReste] = useState(() => resteSec(finA));\n\n  useEffect(() => {\n    const id = setInterval(() => {\n      const r = resteSec(finA);\n      setReste(r);\n      if (r === 0) { clearInterval(id); onExpire(); }\n    }, 1000);\n    return () => clearInterval(id);\n  }, [finA, onExpire]);\n\n  const mm = String(Math.floor(reste / 60)).padStart(2, '0');\n  const ss = String(reste % 60).padStart(2, '0');\n  return <p className={reste < 60 ? 'alerte' : ''}>⏱ {mm}:{ss}</p>;\n}\n\n// Parent\nconst soumettre = useCallback(() => envoyerReponses(), []);\n<Chrono finA={tentative.fin_prevue} onExpire={soumettre} />\n```\n\n### À retenir\n\n- **useEffect** : effets après le rendu ; le tableau de dépendances décide quand\n- **useContext** : données globales sans prop drilling\n- **useRef** : DOM ou valeur persistante sans re-rendu\n- **useReducer** : transitions d'état centralisées\n- **useCallback / useMemo** : mémoriser, avec modération\n\n### Pièges à éviter\n\n- `useEffect` sans tableau qui fait un `setState` → boucle infinie\n- Oublier de nettoyer un `setInterval`\n- `useEffect(async () => …)`\n- Utiliser useRef pour une valeur affichée (l'écran ne se met pas à jour)\n- Mettre useMemo / useCallback partout « au cas où »\n\n*Module suivant → gestion d'état avancée et performance*"
+        }
+      ],
+      "number": 4,
+      "title": "Les Hooks essentiels",
+      "description": "useEffect, useContext, useRef, useReducer, useCallback et useMemo : quand et pourquoi.",
+      "quiz": {
+        "title": "Module 4 : Les Hooks essentiels",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Quand s'exécute `useEffect(fn, [])` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Une seule fois, après le premier rendu",
+                "is_correct": true
+              },
+              {
+                "text": "À chaque rendu",
+                "is_correct": false
+              },
+              {
+                "text": "Jamais",
+                "is_correct": false
+              },
+              {
+                "text": "Avant le premier rendu",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le tableau vide signifie « aucune dépendance ne change jamais » : l'effet tourne une seule fois, après le montage."
+          },
+          {
+            "text": "Lesquels de ces cas sont des effets de bord à placer dans useEffect ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Calculer `prix * quantite` pour l'afficher",
+                "is_correct": false
+              },
+              {
+                "text": "Un appel API au chargement",
+                "is_correct": true
+              },
+              {
+                "text": "Un setInterval",
+                "is_correct": true
+              },
+              {
+                "text": "Abonnement à `window.addEventListener('resize')`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Un simple calcul d'affichage se fait directement dans le composant. Le réseau, les timers et les abonnements sont des effets de bord."
+          },
+          {
+            "text": "À quoi sert la fonction retournée par un useEffect ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "À retourner du JSX",
+                "is_correct": false
+              },
+              {
+                "text": "À relancer l'effet",
+                "is_correct": false
+              },
+              {
+                "text": "À gérer les erreurs",
+                "is_correct": false
+              },
+              {
+                "text": "À nettoyer (arrêter un timer, se désabonner)",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Elle s'exécute quand le composant disparaît, et avant chaque relance de l'effet. Elle évite les fuites."
+          },
+          {
+            "text": "Que se passe-t-il ici ?\n\n```jsx\nuseEffect(() => {\n  setCount(count + 1);\n});\n```",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "count augmente une fois",
+                "is_correct": false
+              },
+              {
+                "text": "Erreur de syntaxe",
+                "is_correct": false
+              },
+              {
+                "text": "Rien",
+                "is_correct": false
+              },
+              {
+                "text": "Boucle infinie de rendus",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Sans tableau, l'effet tourne après chaque rendu ; le `setCount` provoque un nouveau rendu, qui relance l'effet, et ainsi de suite."
+          },
+          {
+            "text": "Quel problème useContext résout-il ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Les appels API lents",
+                "is_correct": false
+              },
+              {
+                "text": "Le style CSS",
+                "is_correct": false
+              },
+              {
+                "text": "Le prop drilling : passer une prop à travers des composants qui n'en ont pas besoin",
+                "is_correct": true
+              },
+              {
+                "text": "Les fuites mémoire",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Un descendant lit la valeur directement auprès du Provider, sans intermédiaires."
+          },
+          {
+            "text": "Quelles affirmations sur useRef sont vraies ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Modifier `ref.current` déclenche un re-rendu",
+                "is_correct": false
+              },
+              {
+                "text": "Il convient pour stocker l'id d'un setInterval",
+                "is_correct": true
+              },
+              {
+                "text": "La valeur est conservée entre les rendus",
+                "is_correct": true
+              },
+              {
+                "text": "Il permet d'accéder à un élément du DOM",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Modifier `ref.current` ne redessine pas : c'est la grande différence avec useState."
+          },
+          {
+            "text": "Dans useReducer, qu'est-ce que `dispatch` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Le reducer lui-même",
+                "is_correct": false
+              },
+              {
+                "text": "Un Hook de navigation",
+                "is_correct": false
+              },
+              {
+                "text": "La valeur actuelle de l'état",
+                "is_correct": false
+              },
+              {
+                "text": "La fonction qui envoie une action au reducer",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`dispatch({ type: 'INCREMENT' })` appelle le reducer avec l'état actuel et cette action, puis enregistre le nouvel état."
+          },
+          {
+            "text": "Différence entre useCallback et useMemo ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "useMemo mémorise une fonction ; useCallback un résultat",
+                "is_correct": false
+              },
+              {
+                "text": "Aucune",
+                "is_correct": false
+              },
+              {
+                "text": "useCallback sert aux appels API",
+                "is_correct": false
+              },
+              {
+                "text": "useCallback mémorise une fonction ; useMemo mémorise le résultat d'un calcul",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`useCallback(fn, deps)` équivaut à `useMemo(() => fn, deps)`."
+          },
+          {
+            "text": "Il faut entourer toutes les fonctions d'un composant avec useCallback pour de meilleures performances.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. La mémorisation a un coût. On l'utilise quand une référence stable sert à quelque chose (enfant mémoïsé, dépendance d'effet) ou pour un calcul lourd."
+          },
+          {
+            "text": "Dans le chrono PassQuiz, pourquoi le parent passe-t-il `onExpire` avec useCallback ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Ce n'est pas nécessaire",
+                "is_correct": false
+              },
+              {
+                "text": "Parce que `onExpire` est une dépendance de l'effet : sans référence stable, l'effet est relancé à chaque rendu du parent",
+                "is_correct": true
+              },
+              {
+                "text": "Pour que le timer soit plus précis",
+                "is_correct": false
+              },
+              {
+                "text": "Parce que useCallback envoie la requête au serveur",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Une fonction recréée à chaque rendu est une nouvelle référence. L'effet verrait une dépendance changer, et l'intervalle serait recréé sans arrêt."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Module_05_Etat_Avance_Performance_Cours.pdf",
+      "courses": [
+        {
+          "title": "Context + useReducer",
+          "description": "Un mini-Redux sans bibliothèque externe.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Le Provider global\n\n- **useReducer** gère les transitions\n- **Context** rend `state` et `dispatch` accessibles partout\n- Chaque `case` retourne un **nouvel objet** (`...state`)\n- On entoure `<App />` avec `<AppProvider>`\n\n```jsx\n// AppContext.jsx\nconst AppContext = createContext();\n\nconst initialState = { user: null, theme: 'light' };\n\nconst reducer = (state, action) => {\n  switch (action.type) {\n    case 'SET_USER':     return { ...state, user: action.payload };\n    case 'LOGOUT':       return { ...state, user: null };\n    case 'TOGGLE_THEME': return { ...state,\n      theme: state.theme === 'light' ? 'dark' : 'light' };\n    default:             return state;\n  }\n};\n\nexport function AppProvider({ children }) {\n  const [state, dispatch] = useReducer(reducer, initialState);\n  return (\n    <AppContext.Provider value={{ state, dispatch }}>\n      {children}\n    </AppContext.Provider>\n  );\n}\n\nexport const useAppContext = () => useContext(AppContext);\n```\n\n### L'utiliser dans un composant\n\n- Aucune prop à faire descendre\n- Le composant **décrit ce qui s'est passé** (`SET_USER`) ; le reducer décide du nouvel état\n- Toute la logique d'état est dans **un seul fichier**\n\n```jsx\nfunction LoginButton() {\n  const { state, dispatch } = useAppContext();\n\n  const handleLogin = () =>\n    dispatch({ type: 'SET_USER',\n               payload: { name: 'Awa' } });\n\n  return state.user ? (\n    <>\n      <p>Bonjour {state.user.name}</p>\n      <button onClick={() => dispatch({ type: 'LOGOUT' })}>\n        Déconnexion\n      </button>\n    </>\n  ) : (\n    <button onClick={handleLogin}>Se connecter</button>\n  );\n}\n```"
+        },
+        {
+          "title": "Redux Toolkit",
+          "description": "Un store unique et prévisible pour les grandes applications.",
+          "duration_minutes": 20,
+          "position": 2,
+          "content": "### Les 3 principes de Redux\n\n- **Source unique de vérité** : tout l'état global est dans **un seul store**\n- **État en lecture seule** : on ne le modifie qu'en envoyant des **actions**\n- **Fonctions pures** : les **reducers** calculent le nouvel état\n\n> **Redux Toolkit (RTK)** — C'est la façon officielle et moderne d'écrire du Redux : beaucoup moins de code répétitif. Installation : `npm install @reduxjs/toolkit react-redux`.\n\n### Créer un slice\n\n- Un **slice** = une tranche de l'état (user, panier, thème…)\n- RTK génère automatiquement les **actions**\n- On peut écrire `state.user = …` : la bibliothèque **Immer** produit en coulisse une copie immuable\n\n```jsx\n// store/slices/userSlice.js\nimport { createSlice } from '@reduxjs/toolkit';\n\nconst userSlice = createSlice({\n  name: 'user',\n  initialState: { user: null, isAuthenticated: false },\n  reducers: {\n    loginSuccess: (state, action) => {\n      state.user = action.payload;\n      state.isAuthenticated = true;\n    },\n    logout: (state) => {\n      state.user = null;\n      state.isAuthenticated = false;\n    },\n  },\n});\n\nexport const { loginSuccess, logout } = userSlice.actions;\nexport default userSlice.reducer;\n```\n\n> **Uniquement dans createSlice** — Cette écriture « mutable » ne fonctionne qu'avec Immer. Dans un `useState` ou un `useReducer` classique, il faut toujours copier.\n\n### Store, Provider, useSelector, useDispatch\n\n- **configureStore** assemble les slices\n- **Provider** rend le store accessible\n- **useSelector** lit une partie de l'état\n- **useDispatch** envoie une action\n\n```jsx\n// store/index.js\nexport const store = configureStore({\n  reducer: { user: userReducer, cart: cartReducer },\n});\n\n// main.jsx\n<Provider store={store}>\n  <App />\n</Provider>\n\n// Dans un composant\nconst { user, isAuthenticated } =\n  useSelector(state => state.user);\nconst dispatch = useDispatch();\n\ndispatch(loginSuccess({ name: 'Awa' }));\ndispatch(logout());\n```\n\n### Actions asynchrones : createAsyncThunk\n\n- 3 états automatiques : **pending**, **fulfilled**, **rejected**\n- On les gère dans `extraReducers`\n- Dans le composant : `dispatch(fetchUsers())`\n\n```jsx\nexport const fetchUsers = createAsyncThunk(\n  'users/fetchUsers',\n  async () => {\n    const res = await fetch('https://api.example.com/users');\n    return res.json();\n  }\n);\n\nconst usersSlice = createSlice({\n  name: 'users',\n  initialState: { users: [], loading: false, error: null },\n  reducers: {},\n  extraReducers: (builder) => {\n    builder\n      .addCase(fetchUsers.pending,   (s) => { s.loading = true; })\n      .addCase(fetchUsers.fulfilled, (s, a) => {\n        s.users = a.payload; s.loading = false; })\n      .addCase(fetchUsers.rejected,  (s, a) => {\n        s.error = a.error.message; s.loading = false; });\n  },\n});\n```"
+        },
+        {
+          "title": "Zustand : l'alternative légère",
+          "description": "Un store en quelques lignes, sans Provider.",
+          "duration_minutes": 15,
+          "position": 3,
+          "content": "### Créer et utiliser un store Zustand\n\n- `npm install zustand`\n- Le store **est** un Hook : `useCounterStore()`\n- **Aucun Provider** à ajouter\n- Sélectionner seulement ce qu'on utilise (`s => s.count`) : moins de re-rendus\n\n```jsx\n// store/counterStore.js\nimport { create } from 'zustand';\n\nexport const useCounterStore = create((set) => ({\n  count: 0,\n  increment: () => set(s => ({ count: s.count + 1 })),\n  reset: () => set({ count: 0 }),\n}));\n\n// components/Counter.jsx\nfunction Counter() {\n  const count = useCounterStore(s => s.count);\n  const increment = useCounterStore(s => s.increment);\n  return <button onClick={increment}>{count}</button>;\n}\n```\n\n### Persister dans le localStorage\n\n- Le middleware **persist** sauvegarde le store\n- Rechargement de page → valeur restaurée\n- `name` : la clé utilisée dans le localStorage\n\n```jsx\nimport { create } from 'zustand';\nimport { persist, createJSONStorage }\n  from 'zustand/middleware';\n\nexport const useThemeStore = create(\n  persist(\n    (set) => ({\n      theme: 'light',\n      toggleTheme: () => set(s => ({\n        theme: s.theme === 'light' ? 'dark' : 'light',\n      })),\n    }),\n    {\n      name: 'theme-storage',\n      storage: createJSONStorage(() => localStorage),\n    }\n  )\n);\n```\n\n### Context, Redux ou Zustand ?\n\n|   | Context + useReducer | Redux Toolkit | Zustand |\n|---|---|---|---|\n| Installation | Rien (intégré) | 2 paquets (~30 Ko) | 1 paquet (~3 Ko) |\n| Code à écrire | Moyen | Le plus important | Minimal |\n| Provider | Oui | Oui | Non |\n| DevTools | Limitées | Excellentes | Bonnes |\n| Idéal pour | Petites / moyennes apps, peu de mises à jour | Grandes apps, équipes nombreuses | Apps moyennes, état simple et partagé |\n\n> **Repère** — Commencez par l'état local (useState). Passez au global seulement pour ce qui est **vraiment** partagé."
+        },
+        {
+          "title": "Performance",
+          "description": "Mesurer d'abord, optimiser ensuite.",
+          "duration_minutes": 20,
+          "position": 4,
+          "content": "### React.memo et code splitting\n\n**React.memo : pas de re-rendu inutile**\n\n```jsx\nimport { memo } from 'react';\n\nconst Liste = memo(function Liste({ items }) {\n  return <ul>{/* … */}</ul>;\n});\n```\n\n- Si les props **n'ont pas changé**, le rendu est réutilisé\n- À combiner avec useCallback pour les props fonctions\n\n**lazy + Suspense : charger à la demande**\n\n```jsx\nconst Dashboard = lazy(() => import('./Dashboard'));\n\n<Suspense fallback={<p>Chargement...</p>}>\n  <Dashboard />\n</Suspense>\n```\n\n- Le code de la page n'est téléchargé **que si on y va**\n- Bundle initial plus léger\n\n### Bonnes pratiques de performance\n\n| Pratique | Bénéfice |\n|---|---|\n| React.memo sur les composants lourds | Évite les re-rendus inutiles |\n| useMemo / useCallback ciblés | Évite les recalculs, stabilise les références |\n| Code splitting (lazy) | Réduit le JavaScript chargé au départ |\n| Virtualisation des longues listes (react-window) | N'affiche que les lignes visibles |\n| Images optimisées | Pages plus rapides (ENF-03 : < 3 s en 4G) |\n\n> **Outils** — React DevTools (onglet Profiler), Lighthouse, Chrome DevTools. Ne sacrifiez pas la lisibilité pour une micro-optimisation.\n\n### Application PassQuiz — l'utilisateur connecté\n\nLe seul état vraiment global : qui est connecté, avec quel rôle.\n\n- **Context + useReducer** suffit (app moyenne)\n- Rôle : admin / formateur / apprenant\n- Le jeton Sanctum est conservé pour Axios (module 7)\n- Les pages admin sont chargées avec **lazy** : les apprenants ne téléchargent pas leur code\n\n```jsx\nconst initial = { user: null, token: localStorage.getItem('token') };\n\nfunction authReducer(state, action) {\n  switch (action.type) {\n    case 'LOGIN':\n      return { user: action.payload.user, token: action.payload.token };\n    case 'LOGOUT':\n      return { user: null, token: null };\n    default:\n      return state;\n  }\n}\n\nexport function AuthProvider({ children }) {\n  const [state, dispatch] = useReducer(authReducer, initial);\n  const estAdmin = state.user?.role === 'admin';\n  return (\n    <AuthContext.Provider value={{ ...state, estAdmin, dispatch }}>\n      {children}\n    </AuthContext.Provider>\n  );\n}\n\n// App.jsx\nconst Admin = lazy(() => import('./pages/admin/Dashboard'));\n```\n\n### À retenir\n\n- **Context + useReducer** : solution intégrée, idéale pour une app moyenne\n- **Redux Toolkit** : slice → store → Provider → useSelector / useDispatch\n- **Zustand** : store-Hook, sans Provider, persistance facile\n- **React.memo** évite les re-rendus inutiles\n- **lazy + Suspense** charge le code à la demande\n\n### Pièges à éviter\n\n- Tout mettre dans l'état global « au cas où »\n- Muter l'état hors de `createSlice`\n- Oublier le `Provider` (Context ou Redux)\n- `useStore()` sans sélecteur : re-rendu à chaque changement\n- Optimiser sans avoir mesuré\n\n*Module suivant → navigation avec React Router*"
+        }
+      ],
+      "number": 5,
+      "title": "Gestion d'état avancée et performance",
+      "description": "Context + useReducer, Redux Toolkit, Zustand : choisir le bon outil, puis optimiser.",
+      "quiz": {
+        "title": "Module 5 : Gestion d'état avancée et performance",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Que permet la combinaison Context + useReducer ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Gérer un état global à la manière de Redux, sans bibliothèque externe",
+                "is_correct": true
+              },
+              {
+                "text": "Remplacer React Router",
+                "is_correct": false
+              },
+              {
+                "text": "Faire des appels API",
+                "is_correct": false
+              },
+              {
+                "text": "Écrire du CSS",
+                "is_correct": false
+              }
+            ],
+            "explanation": "useReducer centralise les transitions d'état, et Context rend `state` et `dispatch` disponibles dans toute l'application."
+          },
+          {
+            "text": "Quels sont les principes de Redux ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Les changements passent par des fonctions pures (reducers)",
+                "is_correct": true
+              },
+              {
+                "text": "Chaque composant a son propre store",
+                "is_correct": false
+              },
+              {
+                "text": "Une source unique de vérité (un store)",
+                "is_correct": true
+              },
+              {
+                "text": "L'état est en lecture seule, modifié par des actions",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Redux repose sur un store unique, sans plusieurs stores par composant."
+          },
+          {
+            "text": "Dans un reducer de `createSlice`, écrire `state.user = action.payload` est correct.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. Redux Toolkit utilise Immer, qui transforme cette écriture « mutable » en une mise à jour immuable."
+          },
+          {
+            "text": "Quel Hook lit une partie du store Redux ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`useSelector`",
+                "is_correct": true
+              },
+              {
+                "text": "`useStore`",
+                "is_correct": false
+              },
+              {
+                "text": "`useReducer`",
+                "is_correct": false
+              },
+              {
+                "text": "`useDispatch`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`useSelector(state => state.user)` lit l'état ; `useDispatch` sert à envoyer des actions."
+          },
+          {
+            "text": "Quels états génère automatiquement `createAsyncThunk` ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`rejected`",
+                "is_correct": true
+              },
+              {
+                "text": "`fulfilled`",
+                "is_correct": true
+              },
+              {
+                "text": "`finished`",
+                "is_correct": false
+              },
+              {
+                "text": "`pending`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Ce sont les 3 états d'une promesse : en cours, réussie, échouée."
+          },
+          {
+            "text": "Quel avantage de Zustand par rapport à Redux ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Aucun Provider et très peu de code",
+                "is_correct": true
+              },
+              {
+                "text": "Il est intégré à React",
+                "is_correct": false
+              },
+              {
+                "text": "De meilleures DevTools",
+                "is_correct": false
+              },
+              {
+                "text": "Il remplace useState",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Un store Zustand est un Hook qu'on importe directement, sans Provider ni code répétitif."
+          },
+          {
+            "text": "À quoi sert le middleware `persist` de Zustand ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "À sauvegarder le store (ex. dans localStorage) pour le retrouver après rechargement",
+                "is_correct": true
+              },
+              {
+                "text": "À sécuriser l'API",
+                "is_correct": false
+              },
+              {
+                "text": "À accélérer le rendu",
+                "is_correct": false
+              },
+              {
+                "text": "À faire du code splitting",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Le store est enregistré sous une clé (`name`) et restauré au chargement de la page."
+          },
+          {
+            "text": "Que fait `React.memo(Composant)` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Il charge le composant à la demande",
+                "is_correct": false
+              },
+              {
+                "text": "Il évite de redessiner le composant si ses props n'ont pas changé",
+                "is_correct": true
+              },
+              {
+                "text": "Il met en cache les appels API",
+                "is_correct": false
+              },
+              {
+                "text": "Il mémorise une fonction",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Si les props sont identiques au rendu précédent, React réutilise le résultat et ne relance pas la fonction."
+          },
+          {
+            "text": "Quel est le rôle de `lazy` + `Suspense` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Mémoriser des valeurs",
+                "is_correct": false
+              },
+              {
+                "text": "Charger le code d'un composant seulement quand il est affiché",
+                "is_correct": true
+              },
+              {
+                "text": "Gérer les erreurs API",
+                "is_correct": false
+              },
+              {
+                "text": "Retarder les animations",
+                "is_correct": false
+              }
+            ],
+            "explanation": "C'est le code splitting : `Suspense` affiche un `fallback` pendant le téléchargement du composant."
+          },
+          {
+            "text": "Pour PassQuiz (application de taille moyenne), Context + useReducer suffit pour gérer l'utilisateur connecté.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. L'état global se limite à l'utilisateur, son rôle et son jeton. Redux serait surdimensionné."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Module_06_React_Router_Cours.pdf",
+      "courses": [
+        {
+          "title": "Premiers pas avec React Router",
+          "description": "Changer de page sans recharger la page.",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Pourquoi un routeur ?\n\n- Une SPA n'a **qu'un seul** `index.html`\n- Le routeur lit l'**URL** et affiche le **composant** correspondant\n- Changer de page = changer de composant : **pas de rechargement**, l'état est conservé\n- Fonctionnalités : paramètres d'URL, query strings, redirections, routes imbriquées, lazy loading\n\n> **Installation** — `npm install react-router-dom` — la version web de React Router.\n\n### Configurer le routeur\n\n- **BrowserRouter** entoure toute l'application\n- Il utilise de vraies URL : `/formations/3`\n- Une seule fois, dans `main.jsx`\n\n```jsx\n// main.jsx\nimport { BrowserRouter } from 'react-router-dom';\n\nReactDOM.createRoot(document.getElementById('root')).render(\n  <BrowserRouter>\n    <App />\n  </BrowserRouter>\n);\n```\n\n### Routes, Route et Link\n\n- **Route** : un chemin → un composant (`element`)\n- **Routes** affiche la route qui correspond à l'URL\n- `path=\"*\"` : page 404 pour tout le reste\n- **Link** remplace `<a href>`\n\n```jsx\nimport { Routes, Route, Link } from 'react-router-dom';\n\nfunction App() {\n  return (\n    <>\n      <nav>\n        <Link to=\"/\">Accueil</Link>\n        <Link to=\"/about\">À propos</Link>\n      </nav>\n\n      <Routes>\n        <Route path=\"/\" element={<Home />} />\n        <Route path=\"/about\" element={<About />} />\n        <Route path=\"*\" element={<NotFound />} />\n      </Routes>\n    </>\n  );\n}\n```\n\n> **Pourquoi pas <a href> ?** — Un `<a>` recharge toute la page et efface l'état. `Link` change l'URL sans rechargement."
+        },
+        {
+          "title": "Navigation avancée",
+          "description": "Paramètres, navigation par le code, redirections.",
+          "duration_minutes": 15,
+          "position": 2,
+          "content": "### Paramètres d'URL : useParams\n\n- `:nom` dans le chemin = partie **variable**\n- `useParams()` retourne un objet avec ces valeurs\n- Les valeurs sont toujours des **chaînes**\n\n```jsx\n// Définition : :userId est un paramètre\n<Route path=\"/user/:userId\" element={<UserProfile />} />\n\n// pages/UserProfile.jsx\nimport { useParams } from 'react-router-dom';\n\nfunction UserProfile() {\n  const { userId } = useParams();\n  return <h1>Profil de l'utilisateur {userId}</h1>;\n}\n\n// /user/42  →  userId = \"42\"\n```\n\n### useNavigate et useSearchParams\n\n**Naviguer par le code**\n\n```jsx\nconst navigate = useNavigate();\n\nconst handleLogin = async () => {\n  await connexion();\n  navigate('/dashboard');\n};\n\nnavigate(-1); // page précédente\n```\n\n- Après une action : connexion, envoi de formulaire…\n\n**Query strings : ?q=react**\n\n```jsx\nconst [searchParams, setSearchParams] =\n  useSearchParams();\nconst q = searchParams.get('q') || '';\n\n<input value={q}\n  onChange={e => setSearchParams(\n    { q: e.target.value })} />\n```\n\n- Filtres et recherche **dans l'URL** : partageables\n\n### Protéger une page : redirection\n\n- **Navigate** redirige dès qu'il est affiché\n- `replace` : la page protégée ne reste pas dans l'historique\n- Le composant enveloppe la page grâce à **children**\n\n```jsx\nimport { Navigate } from 'react-router-dom';\n\nfunction PrivateRoute({ children }) {\n  const { isAuthenticated } = useAuth();\n  return isAuthenticated\n    ? children\n    : <Navigate to=\"/login\" replace />;\n}\n\n// Utilisation\n<Route path=\"/dashboard\" element={\n  <PrivateRoute>\n    <Dashboard />\n  </PrivateRoute>\n} />\n```\n\n> **Sécurité** — Une route protégée côté React améliore l'expérience mais ne sécurise rien : c'est l'**API Laravel** qui doit refuser l'accès (ENF-02)."
+        },
+        {
+          "title": "Layouts et routes imbriquées",
+          "description": "Un header et un footer communs, des pages qui changent au milieu.",
+          "duration_minutes": 25,
+          "position": 3,
+          "content": "### Un layout avec Outlet\n\n- Le layout contient les parties **communes**\n- **Outlet** = emplacement réservé à la page courante\n- Header et footer ne sont pas redessinés à chaque navigation\n\n```jsx\n// layouts/MainLayout.jsx\nimport { Outlet, Link } from 'react-router-dom';\n\nfunction MainLayout() {\n  return (\n    <>\n      <header>\n        <Link to=\"/\">Accueil</Link>\n        <Link to=\"/products\">Produits</Link>\n      </header>\n      <main>\n        <Outlet /> {/* la page enfant s'affiche ici */}\n      </main>\n      <footer>© 2026 Mon Site</footer>\n    </>\n  );\n}\n```\n\n### Routes imbriquées\n\n- Les routes **enfants** s'affichent dans l'`Outlet` du parent\n- `index` : la page affichée sur `/`\n- Chemins enfants **relatifs** (sans `/` au début)\n\n```jsx\n<Routes>\n  <Route path=\"/\" element={<MainLayout />}>\n    <Route index element={<Home />} />\n    <Route path=\"products\" element={<Products />} />\n    <Route path=\"products/:id\" element={<ProductDetail />} />\n    <Route path=\"cart\" element={<Cart />} />\n  </Route>\n</Routes>\n```\n\n### Les hooks de navigation\n\n| Hook | Utilisation |\n|---|---|\n| `useNavigate()` | Naviguer par le code |\n| `useParams()` | Lire les paramètres d'URL (`:id`) |\n| `useLocation()` | Connaître l'URL actuelle (ex. surligner le menu) |\n| `useSearchParams()` | Lire et modifier les query strings |\n| `useMatch()` | Savoir si l'URL correspond à un motif |\n\n### Application PassQuiz — la carte des routes\n\nLes pages du parcours apprenant (cahier, section 1).\n\n- `/verification/:numero` est **publique** (EF-20)\n- Pages apprenant protégées par `PrivateRoute`\n- Admin réservé au rôle via `AdminRoute`\n- `useParams` lit l'id de la formation, du cours ou du quiz\n\n```jsx\n<Routes>\n  <Route path=\"/\" element={<MainLayout />}>\n    <Route index element={<Catalogue />} />\n    <Route path=\"login\" element={<Login />} />\n    <Route path=\"register\" element={<Register />} />\n    <Route path=\"verification/:numero\" element={<Verification />} />\n    <Route path=\"formations/:id\" element={<FormationDetail />} />\n\n    <Route element={<PrivateRoute><Outlet /></PrivateRoute>}>\n      <Route path=\"dashboard\" element={<Dashboard />} />\n      <Route path=\"cours/:id\" element={<Cours />} />\n      <Route path=\"quiz/:id\" element={<Quiz />} />\n      <Route path=\"resultats/:tentativeId\" element={<Resultat />} />\n    </Route>\n\n    <Route path=\"admin/*\" element={<AdminRoute><Admin /></AdminRoute>} />\n    <Route path=\"*\" element={<NotFound />} />\n  </Route>\n</Routes>\n```\n\n> **Exercice** — Créez `AdminRoute` sur le modèle de `PrivateRoute`, en testant `user.role`.\n\n### À retenir\n\n- **BrowserRouter** → **Routes** → **Route** (`path` + `element`)\n- **Link** pour naviguer sans recharger\n- **useParams**, **useNavigate**, **useSearchParams**\n- **Navigate** pour rediriger (pages protégées)\n- **Outlet** + routes imbriquées pour les layouts\n\n### Pièges à éviter\n\n- `<a href>` au lieu de `<Link>` : rechargement complet\n- Oublier `BrowserRouter` dans `main.jsx`\n- Oublier `<Outlet />` dans le layout : les pages enfants ne s'affichent pas\n- Croire qu'une route protégée côté React suffit à sécuriser\n- Oublier que `useParams` renvoie des chaînes\n\n*Module suivant → formulaires et appels API*"
+        }
+      ],
+      "number": 6,
+      "title": "Navigation avec React Router",
+      "description": "Plusieurs pages, une seule application : routes, paramètres, layouts et pages protégées.",
+      "quiz": {
+        "title": "Module 6 : Navigation avec React Router",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Quel composant entoure l'application pour activer le routage ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`<Link>`",
+                "is_correct": false
+              },
+              {
+                "text": "`<BrowserRouter>`",
+                "is_correct": true
+              },
+              {
+                "text": "`<Routes>`",
+                "is_correct": false
+              },
+              {
+                "text": "`<Outlet>`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`BrowserRouter` se place une fois, dans `main.jsx`, autour de `<App />`."
+          },
+          {
+            "text": "Pourquoi utiliser `<Link to=\"/about\">` plutôt que `<a href=\"/about\">` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`Link` change de page sans recharger, donc l'état est conservé",
+                "is_correct": true
+              },
+              {
+                "text": "`Link` est plus court à écrire",
+                "is_correct": false
+              },
+              {
+                "text": "Pour le style",
+                "is_correct": false
+              },
+              {
+                "text": "`<a>` est interdit en JSX",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`<a>` demande une nouvelle page au serveur et relance toute l'application."
+          },
+          {
+            "text": "Avec `<Route path=\"/user/:userId\">`, que donne `useParams()` pour l'URL `/user/42` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`42` (nombre)",
+                "is_correct": false
+              },
+              {
+                "text": "`{ userId: \"42\" }`",
+                "is_correct": true
+              },
+              {
+                "text": "`[\"42\"]`",
+                "is_correct": false
+              },
+              {
+                "text": "`\"/user/42\"`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "useParams retourne un objet ; les valeurs sont des chaînes (convertir avec `Number()` si besoin)."
+          },
+          {
+            "text": "Quel hook permet de rediriger vers `/dashboard` après une connexion réussie ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`useParams`",
+                "is_correct": false
+              },
+              {
+                "text": "`useNavigate`",
+                "is_correct": true
+              },
+              {
+                "text": "`useSearchParams`",
+                "is_correct": false
+              },
+              {
+                "text": "`useLocation`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`const navigate = useNavigate(); navigate('/dashboard');`"
+          },
+          {
+            "text": "Quelle route affiche une page 404 pour toute URL inconnue ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`<Route path=\"/\" …>`",
+                "is_correct": false
+              },
+              {
+                "text": "`<Route path=\"*\" …>`",
+                "is_correct": true
+              },
+              {
+                "text": "`<Route path=\"404\" …>`",
+                "is_correct": false
+              },
+              {
+                "text": "`<Route index …>`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`*` correspond à tout chemin qui n'a été capturé par aucune autre route."
+          },
+          {
+            "text": "À quoi sert `<Outlet />` dans un layout ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "À protéger une page",
+                "is_correct": false
+              },
+              {
+                "text": "À sortir de l'application",
+                "is_correct": false
+              },
+              {
+                "text": "À afficher la route enfant active à cet endroit",
+                "is_correct": true
+              },
+              {
+                "text": "À créer un lien",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les routes imbriquées s'affichent dans l'`Outlet` du composant parent."
+          },
+          {
+            "text": "Que fait ce composant ?\n\n```jsx\nfunction PrivateRoute({ children }) {\n  const { isAuthenticated } = useAuth();\n  return isAuthenticated\n    ? children\n    : <Navigate to=\"/login\" replace />;\n}\n```",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Il redirige vers /login sinon",
+                "is_correct": true
+              },
+              {
+                "text": "Il affiche la page si l'utilisateur est connecté",
+                "is_correct": true
+              },
+              {
+                "text": "Il sécurise totalement les données côté serveur",
+                "is_correct": false
+              },
+              {
+                "text": "Il remplace l'entrée de l'historique grâce à `replace`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Il ne sécurise pas le serveur : l'API Laravel doit aussi vérifier les droits (ENF-02)."
+          },
+          {
+            "text": "Quel hook lit `?q=react` dans l'URL ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`useParams`",
+                "is_correct": false
+              },
+              {
+                "text": "`useNavigate`",
+                "is_correct": false
+              },
+              {
+                "text": "`useMatch`",
+                "is_correct": false
+              },
+              {
+                "text": "`useSearchParams`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`searchParams.get('q')` renvoie \"react\"."
+          },
+          {
+            "text": "Dans PassQuiz, la page `/verification/:numero` doit être protégée par `PrivateRoute`.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. EF-20 : la vérification d'un certificat est publique, accessible sans connexion."
+          },
+          {
+            "text": "Dans une route imbriquée, que signifie `<Route index element={<Home />} />` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Home est la page 404",
+                "is_correct": false
+              },
+              {
+                "text": "Home s'affiche quand l'URL correspond exactement au chemin du parent",
+                "is_correct": true
+              },
+              {
+                "text": "Home est chargée en lazy",
+                "is_correct": false
+              },
+              {
+                "text": "Home s'affiche sur toutes les pages",
+                "is_correct": false
+              }
+            ],
+            "explanation": "La route index est la page par défaut du parent, par exemple `/`."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Module_07_Formulaires_API_Cours.pdf",
+      "courses": [
+        {
+          "title": "Les formulaires en React",
+          "description": "Qui garde la valeur du champ : React ou le DOM ?",
+          "duration_minutes": 15,
+          "position": 1,
+          "content": "### Formulaire contrôlé\n\n- La valeur vit dans le **state** : `value` + `onChange`\n- **Un seul** `handleChange` grâce à `[name]`\n- `preventDefault()` : pas de rechargement\n- Avantage : valeur toujours disponible (validation en direct, bouton désactivé…)\n\n```jsx\nfunction LoginForm() {\n  const [formData, setFormData] = useState({ email: '', password: '' });\n\n  const handleChange = (e) => {\n    const { name, value } = e.target;\n    setFormData(prev => ({ ...prev, [name]: value }));\n  };\n\n  const handleSubmit = (e) => {\n    e.preventDefault();\n    console.log('Envoyé :', formData);\n  };\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <input type=\"email\" name=\"email\"\n        value={formData.email} onChange={handleChange} />\n      <input type=\"password\" name=\"password\"\n        value={formData.password} onChange={handleChange} />\n      <button type=\"submit\">Se connecter</button>\n    </form>\n  );\n}\n```\n\n### Contrôlé ou non contrôlé ?\n\n**Contrôlé (state)**\n\n- React connaît la valeur **à chaque frappe**\n- Validation en direct, champs dépendants\n- Méthode **recommandée**\n\n**Non contrôlé (useRef)**\n\n```jsx\nconst emailRef = useRef(null);\n\nconst handleSubmit = (e) => {\n  e.preventDefault();\n  console.log(emailRef.current.value);\n};\n\n<input type=\"email\" ref={emailRef} />\n```\n\n- Le **DOM** garde la valeur ; on la lit à l'envoi\n- Moins de code, moins de contrôle"
+        },
+        {
+          "title": "Valider les saisies",
+          "description": "Côté client pour le confort, côté serveur pour la sécurité.",
+          "duration_minutes": 15,
+          "position": 2,
+          "content": "### Validation manuelle\n\n- `validate()` retourne un **objet d'erreurs**\n- Objet vide = formulaire valide\n- Chaque message s'affiche **sous son champ** (rendu conditionnel)\n- PassQuiz EF-01 : mot de passe **≥ 8 caractères**\n\n```jsx\nconst [errors, setErrors] = useState({});\n\nconst validate = () => {\n  const e = {};\n  if (!formData.name) e.name = 'Le nom est requis';\n  if (!/\\S+@\\S+\\.\\S+/.test(formData.email)) e.email = 'Email invalide';\n  if (formData.password.length < 8)\n    e.password = '8 caractères minimum';\n  if (formData.password !== formData.confirm)\n    e.confirm = 'Les mots de passe ne correspondent pas';\n  return e;\n};\n\nconst handleSubmit = (ev) => {\n  ev.preventDefault();\n  const e = validate();\n  setErrors(e);\n  if (Object.keys(e).length === 0) envoyer(formData);\n};\n\n// Sous le champ\n{errors.email && <span className=\"erreur\">{errors.email}</span>}\n```\n\n### React Hook Form\n\n- `npm install react-hook-form`\n- `register` relie le champ et ses **règles**\n- `handleSubmit` n'appelle `onSubmit` que si tout est **valide**\n- Moins de re-rendus qu'un formulaire contrôlé classique\n\n```jsx\nimport { useForm } from 'react-hook-form';\n\nfunction RegisterForm() {\n  const { register, handleSubmit,\n          formState: { errors } } = useForm();\n\n  const onSubmit = (data) => console.log(data);\n\n  return (\n    <form onSubmit={handleSubmit(onSubmit)}>\n      <input {...register('email', {\n        required: 'Email requis',\n        pattern: { value: /\\S+@\\S+\\.\\S+/, message: 'Email invalide' },\n      })} />\n      {errors.email && <span>{errors.email.message}</span>}\n\n      <input type=\"password\" {...register('password', {\n        required: 'Mot de passe requis',\n        minLength: { value: 8, message: '8 caractères minimum' },\n      })} />\n      {errors.password && <span>{errors.password.message}</span>}\n\n      <button type=\"submit\">S'inscrire</button>\n    </form>\n  );\n}\n```\n\n> **Jamais seulement côté client** — Le navigateur peut être contourné. Laravel revalide tout (ENF-01)."
+        },
+        {
+          "title": "Appels API avec fetch",
+          "description": "La méthode native du navigateur.",
+          "duration_minutes": 15,
+          "position": 3,
+          "content": "### GET et POST avec fetch\n\n**GET : lire**\n\n```jsx\nconst res = await fetch('/api/formations');\nif (!res.ok) throw new Error('Erreur réseau');\nconst data = await res.json();\nsetFormations(data);\n```\n\n- Dans un `useEffect` + états loading / error (module 4)\n- `res.ok` : fetch ne lève **pas** d'erreur sur un 404 ou un 500\n\n**POST : envoyer**\n\n```jsx\nconst res = await fetch('/api/register', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ nom, email, password }),\n});\n```\n\n- Préciser `method`, `headers`, `body`\n- `JSON.stringify` transforme l'objet en texte\n- Désactiver le bouton pendant l'envoi\n\n### États d'envoi d'un formulaire\n\n- `finally` : s'exécute en cas de succès **comme** d'erreur\n- Le bouton désactivé évite le **double envoi**\n- L'utilisateur voit toujours ce qui se passe\n\n```jsx\nconst [loading, setLoading] = useState(false);\nconst [success, setSuccess] = useState(false);\n\nconst handleSubmit = async (e) => {\n  e.preventDefault();\n  setLoading(true);\n  try {\n    const res = await fetch(url, { method: 'POST', /* … */ });\n    if (!res.ok) throw new Error('Erreur réseau');\n    setSuccess(true);\n  } catch (err) {\n    console.error(err);\n  } finally {\n    setLoading(false);\n  }\n};\n\n<button type=\"submit\" disabled={loading}>\n  {loading ? 'Envoi...' : 'Ajouter'}\n</button>\n```"
+        },
+        {
+          "title": "Axios et la couche « services »",
+          "description": "Une configuration unique pour toute l'application.",
+          "duration_minutes": 30,
+          "position": 4,
+          "content": "### Pourquoi Axios ?\n\n|   | fetch | Axios |\n|---|---|---|\n| JSON | `await res.json()` à la main | Automatique : `response.data` |\n| Erreurs HTTP (404, 500) | Il faut tester `res.ok` | Lèvent une erreur automatiquement |\n| Configuration commune | À répéter partout | **Instance** avec baseURL, en-têtes, timeout |\n| Intercepteurs | Non | Oui : ajouter le jeton, gérer le 401 |\n| Installation | Intégré au navigateur | `npm install axios` |\n\n### L'instance Axios et ses intercepteurs\n\n- **baseURL** : plus besoin de répéter l'adresse de l'API\n- **Intercepteur de requête** : le jeton est ajouté **partout**\n- **Intercepteur de réponse** : un 401 renvoie à la connexion\n- `Accept: application/json` : Laravel répond en JSON, même en cas d'erreur\n\n```jsx\n// src/api/axios.js\nimport axios from 'axios';\n\nconst apiClient = axios.create({\n  baseURL: import.meta.env.VITE_API_URL, // http://localhost:8000/api\n  timeout: 10000,\n  headers: { 'Content-Type': 'application/json',\n             Accept: 'application/json' },\n});\n\n// Avant chaque requête : ajouter le jeton\napiClient.interceptors.request.use((config) => {\n  const token = localStorage.getItem('token');\n  if (token) config.headers.Authorization = `Bearer ${token}`;\n  return config;\n});\n\n// Après chaque réponse : jeton expiré ou révoqué\napiClient.interceptors.response.use(\n  (response) => response,\n  (error) => {\n    if (error.response?.status === 401) {\n      localStorage.removeItem('token');\n      window.location.href = '/login';\n    }\n    return Promise.reject(error);\n  }\n);\n\nexport default apiClient;\n```\n\n### Des services pour organiser les appels\n\n- Les composants **ne connaissent pas les URL**\n- Changer une route de l'API = modifier **un seul fichier**\n- Plus facile à tester (on remplace le service par un faux)\n\n```jsx\n// src/services/userService.js\nimport apiClient from '../api/axios';\n\nexport const userService = {\n  getAll:  ()         => apiClient.get('/users'),\n  getById: (id)       => apiClient.get(`/users/${id}`),\n  create:  (user)     => apiClient.post('/users', user),\n  update:  (id, user) => apiClient.put(`/users/${id}`, user),\n  delete:  (id)       => apiClient.delete(`/users/${id}`),\n};\n\n// Dans un composant\nconst { data } = await userService.getAll();\nsetUsers(data);\n```\n\n### Application PassQuiz — connexion avec Sanctum\n\nEF-01 et EF-02 : inscription, connexion, déconnexion.\n\n- Laravel renvoie `{ user, token }` à la connexion\n- Le jeton est stocké, puis ajouté par l'intercepteur\n- Erreurs **422** de Laravel : `error.response.data.errors`\n- Déconnexion : le serveur **révoque** le jeton\n\n```jsx\n// services/authService.js\nexport const authService = {\n  register: (data) => apiClient.post('/register', data),\n  login:    (data) => apiClient.post('/login', data),\n  logout:   ()     => apiClient.post('/logout'),\n};\n\n// pages/Login.jsx\nconst onSubmit = async (form) => {\n  try {\n    const { data } = await authService.login(form);\n    localStorage.setItem('token', data.token);\n    dispatch({ type: 'LOGIN', payload: data });\n    navigate('/dashboard');\n  } catch (err) {\n    if (err.response?.status === 422) {\n      setErrors(err.response.data.errors); // { email: ['…'] }\n    } else {\n      setErreurGlobale('Identifiants invalides');\n    }\n  }\n};\n```\n\n### Application PassQuiz — démarrer et soumettre un quiz\n\nSection 11 du cahier : le serveur décide de tout.\n\n- `demarrer` : le serveur vérifie droits, tentatives (max 3) et délai de 24 h\n- L'API **n'envoie jamais** `est_correcte`\n- `soumettre` : correction et score **côté serveur**\n- React se contente d'afficher la réponse\n\n```jsx\n// services/quizService.js\nexport const quizService = {\n  demarrer:  (quizId) =>\n    apiClient.post(`/quiz/${quizId}/demarrer`),\n  soumettre: (tentativeId, reponses) =>\n    apiClient.post(`/tentatives/${tentativeId}/soumettre`,\n                   { reponses }),\n};\n\n// reponses = [{ question_id: 12, reponse_ids: [45] }, …]\nconst { data } = await quizService.soumettre(tentative.id, reponses);\n// data = { score: 82, reussi: true, certificat: {...} }\n```\n\n> **Pourquoi ?** — Tout ce qui est envoyé au navigateur est lisible dans l'onglet Réseau. Si les bonnes réponses y étaient, n'importe qui pourrait tricher.\n\n### À retenir\n\n- **Contrôlé** : `value` + `onChange`, la valeur vit dans le state\n- Valider côté client **et** côté serveur\n- fetch : `res.ok`, `JSON.stringify`, loading / error / success\n- **Axios** : instance + intercepteurs (jeton, 401)\n- Une couche **services** sépare l'API de l'interface\n\n### Pièges à éviter\n\n- `value` sans `onChange` : champ bloqué\n- Oublier `e.preventDefault()`\n- Croire que fetch lève une erreur sur un 404 (tester `res.ok`)\n- Répéter l'URL de l'API et le jeton dans chaque composant\n- Envoyer les bonnes réponses du quiz au navigateur\n\n*Module suivant → tests, déploiement et bonnes pratiques*"
+        }
+      ],
+      "number": 7,
+      "title": "Formulaires et appels API",
+      "description": "Saisir, valider, envoyer : connecter l'interface React à l'API Laravel.",
+      "quiz": {
+        "title": "Module 7 : Formulaires et appels API",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Qu'est-ce qu'un formulaire contrôlé ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Un formulaire dont les valeurs sont gérées par le state React (`value` + `onChange`)",
+                "is_correct": true
+              },
+              {
+                "text": "Un formulaire sans bouton",
+                "is_correct": false
+              },
+              {
+                "text": "Un formulaire qui utilise useRef",
+                "is_correct": false
+              },
+              {
+                "text": "Un formulaire validé par le serveur",
+                "is_correct": false
+              }
+            ],
+            "explanation": "React est la « source de vérité » : chaque frappe met à jour le state, qui réaffiche la valeur dans le champ."
+          },
+          {
+            "text": "Que fait `[name]: value` dans `setFormData(prev => ({ ...prev, [name]: value }))` ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Supprime la propriété",
+                "is_correct": false
+              },
+              {
+                "text": "Crée une propriété littéralement appelée \"name\"",
+                "is_correct": false
+              },
+              {
+                "text": "Utilise la valeur de la variable `name` comme nom de propriété",
+                "is_correct": true
+              },
+              {
+                "text": "Provoque une erreur",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les crochets permettent un nom de propriété dynamique. Un seul `handleChange` sert alors pour tous les champs (`name=\"email\"`, `name=\"password\"`…)."
+          },
+          {
+            "text": "Une validation côté React suffit à sécuriser les données envoyées à l'API.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. Le client peut être contourné (outils du navigateur, requête directe). Laravel doit toujours revalider."
+          },
+          {
+            "text": "Avec React Hook Form, quelles affirmations sont vraies ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Les messages se trouvent dans `formState.errors`",
+                "is_correct": true
+              },
+              {
+                "text": "`register` relie un champ et ses règles de validation",
+                "is_correct": true
+              },
+              {
+                "text": "Il faut écrire un useState par champ",
+                "is_correct": false
+              },
+              {
+                "text": "`handleSubmit(onSubmit)` n'appelle onSubmit que si le formulaire est valide",
+                "is_correct": true
+              }
+            ],
+            "explanation": "React Hook Form gère lui-même les valeurs : pas besoin d'un useState par champ."
+          },
+          {
+            "text": "`fetch` reçoit une réponse 404. Que se passe-t-il ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "La page se recharge",
+                "is_correct": false
+              },
+              {
+                "text": "fetch lève automatiquement une erreur",
+                "is_correct": false
+              },
+              {
+                "text": "React affiche une erreur",
+                "is_correct": false
+              },
+              {
+                "text": "La promesse est résolue normalement ; il faut tester `response.ok`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "fetch ne rejette la promesse qu'en cas de panne réseau. Pour un 404 ou un 500, il faut vérifier `res.ok`."
+          },
+          {
+            "text": "Pourquoi utiliser `JSON.stringify` dans un POST avec fetch ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Ce n'est jamais nécessaire",
+                "is_correct": false
+              },
+              {
+                "text": "Pour chiffrer les données",
+                "is_correct": false
+              },
+              {
+                "text": "Pour valider les données",
+                "is_correct": false
+              },
+              {
+                "text": "Parce que le corps de la requête doit être du texte",
+                "is_correct": true
+              }
+            ],
+            "explanation": "`body` attend du texte : on transforme l'objet JavaScript en chaîne JSON. Axios le fait automatiquement."
+          },
+          {
+            "text": "Quels sont les avantages d'Axios par rapport à fetch ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Erreur levée automatiquement sur un statut 4xx / 5xx",
+                "is_correct": true
+              },
+              {
+                "text": "Intercepteurs de requêtes et de réponses",
+                "is_correct": true
+              },
+              {
+                "text": "Il est intégré au navigateur sans installation",
+                "is_correct": false
+              },
+              {
+                "text": "Conversion JSON automatique (`response.data`)",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Axios s'installe avec npm. C'est fetch qui est intégré au navigateur."
+          },
+          {
+            "text": "À quoi sert cet intercepteur ?\n\n```jsx\napiClient.interceptors.request.use((config) => {\n  const token = localStorage.getItem('token');\n  if (token) config.headers.Authorization = `Bearer ${token}`;\n  return config;\n});\n```",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "À rediriger vers /login",
+                "is_correct": false
+              },
+              {
+                "text": "À ajouter automatiquement le jeton d'authentification à chaque requête",
+                "is_correct": true
+              },
+              {
+                "text": "À chiffrer le mot de passe",
+                "is_correct": false
+              },
+              {
+                "text": "À mettre en cache les réponses",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Sanctum identifie l'utilisateur grâce à l'en-tête `Authorization: Bearer …`, ajouté ici une fois pour toutes les requêtes."
+          },
+          {
+            "text": "Laravel renvoie une erreur 422 à l'inscription. Où trouver les messages par champ ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`error.status`",
+                "is_correct": false
+              },
+              {
+                "text": "`error.response.data.errors`",
+                "is_correct": true
+              },
+              {
+                "text": "`error.message`",
+                "is_correct": false
+              },
+              {
+                "text": "`response.ok`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Laravel renvoie `{ message, errors: { email: ['…'] } }`. On peut afficher chaque message sous son champ."
+          },
+          {
+            "text": "Dans PassQuiz, l'API peut envoyer `est_correcte` avec les réponses, à condition que React ne l'affiche pas.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. Tout ce qui arrive au navigateur est lisible dans l'onglet Réseau. La section 11 du cahier interdit d'exposer `est_correcte` avant la correction."
+          }
+        ]
+      }
+    },
+    {
+      "pdf": "Module_08_Tests_Deploiement_Cours.pdf",
+      "courses": [
+        {
+          "title": "Tests unitaires avec Vitest",
+          "description": "Vérifier automatiquement qu'un composant fait ce qu'on attend.",
+          "duration_minutes": 20,
+          "position": 1,
+          "content": "### Pourquoi tester ?\n\n- **Détecter les bugs** avant les utilisateurs\n- **Modifier le code sans peur** : les tests préviennent si on casse quelque chose\n- **Documenter** le comportement attendu\n- **Mieux concevoir** : un composant facile à tester est souvent bien découpé\n\n> **Deux niveaux** — **Unitaire** (Vitest) : un composant isolé, très rapide. **E2E** (Playwright) : un vrai navigateur, un parcours complet.\n\n### Installer Vitest\n\n- **Vitest** : le lanceur de tests (même config que Vite)\n- **jsdom** : un faux navigateur dans Node\n- **Testing Library** : tester comme un **utilisateur** (texte visible, clics)\n- Lancer : `npx vitest`\n\n```js\n// npm install -D vitest jsdom @testing-library/react\n//   @testing-library/jest-dom @testing-library/user-event\n\n// vite.config.js\nimport { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\nexport default defineConfig({\n  plugins: [react()],\n  test: {\n    globals: true,\n    environment: 'jsdom',\n    setupFiles: './src/test/setup.js',\n  },\n});\n\n// src/test/setup.js\nimport '@testing-library/jest-dom';\n```\n\n### Tester un composant\n\n- **describe** : groupe de tests · **it** : un cas\n- **render** : affiche le composant\n- **screen.getByText** : trouve un élément comme l'utilisateur le voit\n- **expect(…)** : ce qui doit être vrai\n\n```jsx\n// src/components/Counter.test.jsx\nimport { render, screen, fireEvent } from '@testing-library/react';\nimport Counter from './Counter';\n\ndescribe('Counter', () => {\n  it('affiche la valeur initiale 0', () => {\n    render(<Counter />);\n    expect(screen.getByText('Compteur : 0')).toBeInTheDocument();\n  });\n\n  it('incrémente au clic', () => {\n    render(<Counter />);\n    fireEvent.click(screen.getByText('Incrémenter'));\n    expect(screen.getByText('Compteur : 1')).toBeInTheDocument();\n  });\n});\n```\n\n### Interactions réalistes : user-event\n\n- **user-event** simule une vraie frappe et de vrais clics\n- Méthodes **async** : on utilise `await`\n- **getBy…** échoue si l'élément est absent ; **queryBy…** renvoie `null`\n\n```jsx\nimport userEvent from '@testing-library/user-event';\n\nit('ajoute une tâche', async () => {\n  const user = userEvent.setup();\n  render(<TodoList />);\n\n  await user.type(\n    screen.getByPlaceholderText('Ajouter une tâche...'),\n    'Faire les courses');\n  await user.click(screen.getByText('Ajouter'));\n\n  expect(screen.getByText('Faire les courses'))\n    .toBeInTheDocument();\n});\n\n// Absence d'un élément : queryBy… (renvoie null)\nexpect(screen.queryByText('Tâche')).not.toBeInTheDocument();\n```"
+        },
+        {
+          "title": "Tests E2E avec Playwright",
+          "description": "Un vrai navigateur qui clique à votre place.",
+          "duration_minutes": 15,
+          "position": 2,
+          "content": "### Un test de bout en bout\n\n- Chromium, Firefox et WebKit\n- **Attente automatique** des éléments\n- Captures d'écran et vidéo en cas d'échec\n- `npx playwright test` · `--headed` pour voir le navigateur · `show-report`\n\n```js\n// npm init playwright@latest\n\n// tests/login.spec.js\nimport { test, expect } from '@playwright/test';\n\ntest(\"l'utilisateur peut se connecter\", async ({ page }) => {\n  await page.goto('http://localhost:5173/login');\n  await page.fill('input[name=\"email\"]', 'test@email.com');\n  await page.fill('input[name=\"password\"]', 'password123');\n  await page.click('button[type=\"submit\"]');\n  await expect(page).toHaveURL('http://localhost:5173/dashboard');\n});\n```"
+        },
+        {
+          "title": "Déploiement",
+          "description": "Du code source à une adresse publique.",
+          "duration_minutes": 15,
+          "position": 3,
+          "content": "### Construire la version de production\n\n1. **Construire** : `npm run build` crée le dossier `dist/`\n2. **Vérifier** : `npm run preview` sert le build en local\n3. **Déployer** : Envoyer `dist/` sur un hébergeur statique\n\n```bash\nnpm run build\nnpm run preview\n```\n\n> **Contenu de dist/** — HTML, JavaScript et CSS **minifiés**, assets optimisés : seulement des fichiers statiques, sans Node sur le serveur.\n\n### Vercel ou Netlify\n\n**Vercel**\n\n```bash\nnpm install -g vercel\nvercel\n```\n\n- Connecter le dépôt GitHub\n- Ajouter les variables d'environnement\n- Déploiement à chaque push\n\n**Netlify**\n\n```bash\nnpm install -g netlify-cli\nnetlify deploy --prod\n```\n\n- Commande de build : `npm run build`\n- Dossier publié : `dist`\n- Déploiement à chaque push\n\n> **Routes en production** — Avec BrowserRouter, actualiser `/dashboard` doit renvoyer `index.html`. Sur Netlify, ajoutez `public/_redirects` contenant : `/* /index.html 200`.\n\n### Variables d'environnement\n\n- Seules les variables qui commencent par **VITE_** sont exposées au code\n- Une valeur par environnement : dev, production\n- `import.meta.env.VITE_…` pour les lire\n\n```bash\n# .env.development\nVITE_API_URL=http://localhost:8000/api\n\n# .env.production\nVITE_API_URL=https://api.passquiz.example/api\nVITE_APP_NAME=PassQuiz\n\n# Dans le code (JS)\n# const apiUrl = import.meta.env.VITE_API_URL;\n```\n\n> **Pas de secret** — Ces variables finissent dans le JavaScript envoyé au navigateur : jamais de mot de passe ni de clé privée."
+        },
+        {
+          "title": "Bonnes pratiques et checklist",
+          "description": "Qualité = fiabilité + performance + accessibilité.",
+          "duration_minutes": 25,
+          "position": 4,
+          "content": "### Bonnes pratiques de code\n\n| Pratique | Pourquoi |\n|---|---|\n| Composants petits et réutilisables | Maintenance et tests plus faciles |\n| Noms clairs, props destructurées | Lisibilité |\n| Hooks personnalisés (`useAuth`, `useQuiz`) | Réutiliser la logique |\n| Séparer interface / logique / données (services) | Chaque fichier a un rôle |\n| PropTypes ou TypeScript | Erreurs détectées plus tôt |\n| Commentaires sur le *pourquoi* | Le code dit déjà le *comment* |\n\n### Accessibilité et SEO\n\n**Accessibilité (a11y)**\n\n- Balises sémantiques : `main`, `nav`, `section`, `button`\n- `label` relié à chaque champ (`htmlFor`)\n- Tout utilisable **au clavier**\n- Contraste suffisant (ratio > 4.5:1)\n- Attributs `aria-*` si nécessaire\n\n**SEO et images**\n\n- `react-helmet-async` : `<title>` et `<meta>` par page\n- Images en **WebP / AVIF**\n- `loading=\"lazy\"` pour les images hors écran\n- `srcset` pour adapter la taille à l'écran\n\n### Checklist avant la mise en production\n\n- ☐ Tous les tests passent (Vitest + Playwright)\n- ☐ `npm run build` sans erreur\n- ☐ Variables d'environnement correctes (URL de l'API)\n- ☐ Les routes fonctionnent après actualisation (redirection vers index.html)\n- ☐ Lighthouse : performance et accessibilité > 90\n- ☐ Staging d'abord, puis production, avec un **plan de retour arrière**\n\n> **Surveillance** — Sentry (erreurs), Vercel Analytics ou Plausible (statistiques), Speed Insights (performances).\n\n### Application PassQuiz — tester le scénario critique\n\nSection 13 du cahier : à démontrer à la soutenance.\n\n- Parcours complet : connexion → évaluation finale → résultat\n- Les données de test viennent d'un **seeder Laravel**\n- Semaine 6 du planning : tests et correction des bugs\n- Front déployé avec `VITE_API_URL` pointant vers l'API\n\n```js\ntest('évaluation finale réussie → certificat', async ({ page }) => {\n  await page.goto('/login');\n  await page.fill('input[name=\"email\"]', 'awa@test.bj');\n  await page.fill('input[name=\"password\"]', 'motdepasse');\n  await page.click('button[type=\"submit\"]');\n  await expect(page).toHaveURL(/dashboard/);\n\n  await page.goto('/quiz/8');          // évaluation finale\n  await page.click('text=Commencer');\n  // … répondre aux questions …\n  await page.click('text=Soumettre');\n\n  await expect(page.getByText(/Formation réussie/)).toBeVisible();\n  await expect(page.getByText(/PQ-REA-2026-/)).toBeVisible();\n});\n```\n\n> **Exercice** — Ajoutez un test : une 4e tentative affiche le message de délai (EF-16).\n\n### À retenir\n\n- **Vitest + Testing Library** : tests rapides de composants\n- **Playwright** : parcours complets dans de vrais navigateurs\n- `npm run build` → `dist/` → Vercel / Netlify\n- `import.meta.env.VITE_…` pour la configuration\n- Checklist : tests, build, env, routes, Lighthouse, staging\n\n### Pièges à éviter\n\n- Tester les détails internes au lieu de ce que voit l'utilisateur\n- Oublier `await` avec user-event ou Playwright\n- Variable d'environnement sans le préfixe `VITE_`\n- Mettre un secret dans le `.env` du front\n- Déployer sans vérifier l'actualisation des routes\n\n*Prochaine étape → évaluation finale (20 questions, 70 % requis)*"
+        }
+      ],
+      "number": 8,
+      "title": "Tests, déploiement et bonnes pratiques",
+      "description": "Vérifier que tout fonctionne, mettre en ligne et livrer une application de qualité.",
+      "quiz": {
+        "title": "Module 8 : Tests, déploiement et bonnes pratiques",
+        "passing_score": 60,
+        "time_limit_minutes": 15,
+        "max_attempts": 3,
+        "retry_delay_minutes": 1440,
+        "questions": [
+          {
+            "text": "Pourquoi écrire des tests ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Détecter les bugs avant la production",
+                "is_correct": true
+              },
+              {
+                "text": "Rendre l'application plus rapide pour l'utilisateur",
+                "is_correct": false
+              },
+              {
+                "text": "Modifier le code en confiance",
+                "is_correct": true
+              },
+              {
+                "text": "Documenter le comportement attendu",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Les tests ne changent pas la vitesse de l'application. Ils protègent sa qualité."
+          },
+          {
+            "text": "Quel est le rôle de `environment: 'jsdom'` dans la configuration de Vitest ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Déployer l'application",
+                "is_correct": false
+              },
+              {
+                "text": "Minifier le code",
+                "is_correct": false
+              },
+              {
+                "text": "Simuler un navigateur (DOM) dans Node pour afficher les composants",
+                "is_correct": true
+              },
+              {
+                "text": "Lancer Playwright",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Les composants ont besoin d'un DOM. jsdom en fournit un, sans vrai navigateur."
+          },
+          {
+            "text": "Dans un test, quelle méthode utiliser pour vérifier qu'un élément est ABSENT ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`queryByText`",
+                "is_correct": true
+              },
+              {
+                "text": "`render`",
+                "is_correct": false
+              },
+              {
+                "text": "`findByText`",
+                "is_correct": false
+              },
+              {
+                "text": "`getByText`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`getBy…` lève une erreur si l'élément manque ; `queryBy…` renvoie `null`, ce qui permet `not.toBeInTheDocument()`."
+          },
+          {
+            "text": "Les méthodes de `userEvent` (`type`, `click`) sont asynchrones et s'utilisent avec `await`.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": true
+              },
+              {
+                "text": "Faux",
+                "is_correct": false
+              }
+            ],
+            "explanation": "Vrai. Sans `await`, l'assertion peut s'exécuter avant la fin de la saisie."
+          },
+          {
+            "text": "Qu'est-ce qu'un test E2E ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Un test d'un parcours complet dans un vrai navigateur",
+                "is_correct": true
+              },
+              {
+                "text": "Un test de performance",
+                "is_correct": false
+              },
+              {
+                "text": "Un test d'une seule fonction",
+                "is_correct": false
+              },
+              {
+                "text": "Un test de style CSS",
+                "is_correct": false
+              }
+            ],
+            "explanation": "End-to-End : de l'interface jusqu'au serveur, comme un vrai utilisateur. C'est le rôle de Playwright."
+          },
+          {
+            "text": "Quelle commande crée la version de production d'un projet Vite ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`npm run build`",
+                "is_correct": true
+              },
+              {
+                "text": "`npm run dev`",
+                "is_correct": false
+              },
+              {
+                "text": "`npm run deploy`",
+                "is_correct": false
+              },
+              {
+                "text": "`npm start`",
+                "is_correct": false
+              }
+            ],
+            "explanation": "`npm run build` génère le dossier `dist/`, prêt à être déployé."
+          },
+          {
+            "text": "Laquelle de ces variables est accessible dans le code React (Vite) ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "`NODE_API_URL`",
+                "is_correct": false
+              },
+              {
+                "text": "`API_URL`",
+                "is_correct": false
+              },
+              {
+                "text": "`REACT_APP_API_URL`",
+                "is_correct": false
+              },
+              {
+                "text": "`VITE_API_URL`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Vite n'expose que les variables préfixées par `VITE_`. `REACT_APP_` était la convention de Create React App."
+          },
+          {
+            "text": "On peut stocker une clé secrète dans `.env.production` du front, car elle reste sur le serveur.",
+            "type": "true_false",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Vrai",
+                "is_correct": false
+              },
+              {
+                "text": "Faux",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Faux. Les variables `VITE_` sont intégrées au JavaScript envoyé au navigateur : tout le monde peut les lire."
+          },
+          {
+            "text": "Quelles pratiques améliorent l'accessibilité ?",
+            "type": "multiple",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Remplacer les boutons par des `div` cliquables",
+                "is_correct": false
+              },
+              {
+                "text": "Utiliser des balises sémantiques (`main`, `nav`, `button`)",
+                "is_correct": true
+              },
+              {
+                "text": "Rendre tout utilisable au clavier",
+                "is_correct": true
+              },
+              {
+                "text": "Relier chaque `label` à son champ",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Une `div` cliquable n'est ni atteignable au clavier ni annoncée comme bouton par les lecteurs d'écran."
+          },
+          {
+            "text": "Après déploiement sur Netlify, actualiser `/dashboard` donne une erreur 404. Pourquoi ?",
+            "type": "single",
+            "points": 1,
+            "answers": [
+              {
+                "text": "Il manque `npm install`",
+                "is_correct": false
+              },
+              {
+                "text": "React Router ne fonctionne pas en production",
+                "is_correct": false
+              },
+              {
+                "text": "Le build est corrompu",
+                "is_correct": false
+              },
+              {
+                "text": "Le serveur cherche un fichier `/dashboard` qui n'existe pas ; il faut rediriger toutes les routes vers `index.html`",
+                "is_correct": true
+              }
+            ],
+            "explanation": "Dans une SPA, c'est React Router qui gère `/dashboard`. Le serveur doit donc toujours renvoyer `index.html` (fichier `_redirects`)."
+          }
+        ]
+      }
+    }
+  ],
+  "final_quiz": {
+    "title": "Évaluation finale React",
+    "passing_score": 70,
+    "time_limit_minutes": 30,
+    "max_attempts": 3,
+    "retry_delay_minutes": 1440,
+    "questions": [
+      {
+        "text": "Pourquoi dit-on que React est « déclaratif » ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "On décrit l'interface attendue selon les données, et React met le DOM à jour",
+            "is_correct": true
+          },
+          {
+            "text": "On écrit toutes les modifications du DOM à la main",
+            "is_correct": false
+          },
+          {
+            "text": "On déclare les variables avec const",
+            "is_correct": false
+          },
+          {
+            "text": "On ne peut pas utiliser de fonctions",
+            "is_correct": false
+          }
+        ],
+        "explanation": "On décrit CE QU'on veut voir ; React calcule les différences (DOM virtuel) et applique le minimum de changements."
+      },
+      {
+        "text": "Lesquelles de ces écritures JSX sont valides ?",
+        "type": "multiple",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`<button onclick=\"go()\">`",
+            "is_correct": false
+          },
+          {
+            "text": "`<input type=\"text\" />`",
+            "is_correct": true
+          },
+          {
+            "text": "`<p style={{ marginTop: 8 }}>`",
+            "is_correct": true
+          },
+          {
+            "text": "`<div className=\"box\">`",
+            "is_correct": true
+          }
+        ],
+        "explanation": "En JSX, les événements s'écrivent en camelCase et reçoivent une fonction : `onClick={go}`."
+      },
+      {
+        "text": "Quelle est la bonne façon de passer un nombre en prop ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`<Prix valeur={25000} />`",
+            "is_correct": true
+          },
+          {
+            "text": "`<Prix valeur=25000 />`",
+            "is_correct": false
+          },
+          {
+            "text": "`<Prix {valeur: 25000} />`",
+            "is_correct": false
+          },
+          {
+            "text": "`<Prix valeur=\"25000\" />`",
+            "is_correct": false
+          }
+        ],
+        "explanation": "Les guillemets passent une chaîne. Les accolades passent une expression JavaScript, ici un nombre."
+      },
+      {
+        "text": "`children` contient ce qui est placé entre la balise ouvrante et la balise fermante d'un composant.",
+        "type": "true_false",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Vrai",
+            "is_correct": true
+          },
+          {
+            "text": "Faux",
+            "is_correct": false
+          }
+        ],
+        "explanation": "Vrai. C'est la base de la composition : le composant fournit le cadre, le parent fournit le contenu."
+      },
+      {
+        "text": "Que manque-t-il dans ce code ?\n\n```jsx\n{produits.map(p => (\n  <li>{p.nom}</li>\n))}\n```",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Rien",
+            "is_correct": false
+          },
+          {
+            "text": "Un `return` explicite",
+            "is_correct": false
+          },
+          {
+            "text": "Un `useEffect`",
+            "is_correct": false
+          },
+          {
+            "text": "Une prop `key` unique sur `<li>`",
+            "is_correct": true
+          }
+        ],
+        "explanation": "Chaque élément d'une liste a besoin d'une key stable (`key={p.id}`) pour que React le reconnaisse d'un rendu à l'autre."
+      },
+      {
+        "text": "Pourquoi ce bouton n'augmente-t-il le compteur que de 1 ?\n\n```jsx\nconst f = () => {\n  setN(n + 1);\n  setN(n + 1);\n};\n```",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "C'est un bug de React",
+            "is_correct": false
+          },
+          {
+            "text": "React ignore le second appel par sécurité",
+            "is_correct": false
+          },
+          {
+            "text": "setN est asynchrone et lent",
+            "is_correct": false
+          },
+          {
+            "text": "`n` garde la même valeur pendant le rendu : les deux appels font `setN(n + 1)`",
+            "is_correct": true
+          }
+        ],
+        "explanation": "La valeur est figée dans la closure du rendu. `setN(prev => prev + 1)` ferait bien +2."
+      },
+      {
+        "text": "Quelles mises à jour de state respectent l'immutabilité ?",
+        "type": "multiple",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`list.push(x); setList(list)`",
+            "is_correct": false
+          },
+          {
+            "text": "`setUser(prev => ({ ...prev, nom: 'Awa' }))`",
+            "is_correct": true
+          },
+          {
+            "text": "`setList(prev => [...prev, x])`",
+            "is_correct": true
+          },
+          {
+            "text": "`setList(prev => prev.filter(i => i.id !== id))`",
+            "is_correct": true
+          }
+        ],
+        "explanation": "`push` modifie le tableau existant : même référence, donc React peut ne pas redessiner."
+      },
+      {
+        "text": "Quel tableau de dépendances pour recharger les données à chaque changement de `formationId` ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`[]`",
+            "is_correct": false
+          },
+          {
+            "text": "`[setData]`",
+            "is_correct": false
+          },
+          {
+            "text": "`[formationId]`",
+            "is_correct": true
+          },
+          {
+            "text": "Aucun tableau",
+            "is_correct": false
+          }
+        ],
+        "explanation": "L'effet s'exécute au montage, puis à chaque changement des valeurs listées."
+      },
+      {
+        "text": "Où arrêter un `setInterval` lancé dans un useEffect ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Ce n'est jamais nécessaire",
+            "is_correct": false
+          },
+          {
+            "text": "Dans un autre useState",
+            "is_correct": false
+          },
+          {
+            "text": "Dans la fonction de nettoyage retournée par l'effet",
+            "is_correct": true
+          },
+          {
+            "text": "Dans le JSX",
+            "is_correct": false
+          }
+        ],
+        "explanation": "`return () => clearInterval(id)` : appelé quand le composant disparaît ou que l'effet est relancé."
+      },
+      {
+        "text": "Modifier `maRef.current` provoque un nouveau rendu du composant.",
+        "type": "true_false",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Vrai",
+            "is_correct": false
+          },
+          {
+            "text": "Faux",
+            "is_correct": true
+          }
+        ],
+        "explanation": "Faux. C'est l'intérêt de useRef : conserver une valeur sans redessiner. Pour afficher une valeur, il faut useState."
+      },
+      {
+        "text": "Quel outil choisir pour partager le thème clair/sombre dans toute l'application, sans bibliothèque ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Context (createContext + Provider + useContext)",
+            "is_correct": true
+          },
+          {
+            "text": "useRef",
+            "is_correct": false
+          },
+          {
+            "text": "Le prop drilling sur 6 niveaux",
+            "is_correct": false
+          },
+          {
+            "text": "React Router",
+            "is_correct": false
+          }
+        ],
+        "explanation": "Context est fait pour les données globales simples : thème, utilisateur connecté, langue."
+      },
+      {
+        "text": "Dans un reducer, que doit retourner le cas `default` ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Un objet vide",
+            "is_correct": false
+          },
+          {
+            "text": "Une erreur",
+            "is_correct": false
+          },
+          {
+            "text": "L'état actuel `state`, inchangé",
+            "is_correct": true
+          },
+          {
+            "text": "`null`",
+            "is_correct": false
+          }
+        ],
+        "explanation": "Une action inconnue ne doit rien changer : on retourne l'état tel quel."
+      },
+      {
+        "text": "Redux Toolkit et Zustand : quelles affirmations sont vraies ?",
+        "type": "multiple",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Zustand nécessite un Provider comme Redux",
+            "is_correct": false
+          },
+          {
+            "text": "`useDispatch` envoie des actions",
+            "is_correct": true
+          },
+          {
+            "text": "`useSelector` lit l'état",
+            "is_correct": true
+          },
+          {
+            "text": "`createSlice` génère les actions automatiquement",
+            "is_correct": true
+          }
+        ],
+        "explanation": "Zustand ne nécessite aucun Provider : c'est l'un de ses avantages."
+      },
+      {
+        "text": "Que fait `const Admin = lazy(() => import('./Admin'))` ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Il mémorise les props d'Admin",
+            "is_correct": false
+          },
+          {
+            "text": "Il interdit l'accès à Admin",
+            "is_correct": false
+          },
+          {
+            "text": "Il précharge Admin au démarrage",
+            "is_correct": false
+          },
+          {
+            "text": "Il charge le code d'Admin seulement quand il est affiché (code splitting)",
+            "is_correct": true
+          }
+        ],
+        "explanation": "Le bundle initial est plus léger ; il faut l'entourer d'un `<Suspense fallback={…}>`."
+      },
+      {
+        "text": "Pour la route `/formations/:id`, comment lire l'id dans le composant ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`const id = useSearchParams()`",
+            "is_correct": false
+          },
+          {
+            "text": "`const { id } = useParams()`",
+            "is_correct": true
+          },
+          {
+            "text": "`const id = props.id`",
+            "is_correct": false
+          },
+          {
+            "text": "`const id = useNavigate()`",
+            "is_correct": false
+          }
+        ],
+        "explanation": "useParams renvoie les segments variables de l'URL, sous forme de chaînes."
+      },
+      {
+        "text": "Dans un layout avec routes imbriquées, quelles affirmations sont vraies ?",
+        "type": "multiple",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Le header du layout est rechargé à chaque navigation",
+            "is_correct": false
+          },
+          {
+            "text": "Les chemins enfants s'écrivent sans `/` au début",
+            "is_correct": true
+          },
+          {
+            "text": "`<Outlet />` affiche la route enfant active",
+            "is_correct": true
+          },
+          {
+            "text": "`<Route index …>` est la page par défaut du parent",
+            "is_correct": true
+          }
+        ],
+        "explanation": "Le layout reste affiché : seule la partie dans l'Outlet change."
+      },
+      {
+        "text": "Que manque-t-il pour que ce champ soit modifiable ?\n\n```jsx\n<input value={email} />\n```",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`name=\"email\"`",
+            "is_correct": false
+          },
+          {
+            "text": "`ref={emailRef}`",
+            "is_correct": false
+          },
+          {
+            "text": "`onChange={e => setEmail(e.target.value)}`",
+            "is_correct": true
+          },
+          {
+            "text": "`type=\"email\"`",
+            "is_correct": false
+          }
+        ],
+        "explanation": "Un champ contrôlé sans onChange est figé : React réaffiche toujours la même valeur."
+      },
+      {
+        "text": "Quel est l'intérêt d'un intercepteur de requête Axios dans PassQuiz ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Remplacer Sanctum",
+            "is_correct": false
+          },
+          {
+            "text": "Corriger les quiz côté client",
+            "is_correct": false
+          },
+          {
+            "text": "Ajouter automatiquement `Authorization: Bearer <jeton>` à chaque appel à l'API Laravel",
+            "is_correct": true
+          },
+          {
+            "text": "Accélérer les requêtes",
+            "is_correct": false
+          }
+        ],
+        "explanation": "Le jeton Sanctum est ajouté une seule fois, au même endroit, pour toutes les requêtes."
+      },
+      {
+        "text": "Dans PassQuiz, le score d'un quiz est calculé par React puis envoyé au serveur.",
+        "type": "true_false",
+        "points": 1,
+        "answers": [
+          {
+            "text": "Vrai",
+            "is_correct": false
+          },
+          {
+            "text": "Faux",
+            "is_correct": true
+          }
+        ],
+        "explanation": "Faux. EF-15 et section 11 : la correction, le score, le chrono et les tentatives sont gérés côté serveur. React affiche seulement le résultat."
+      },
+      {
+        "text": "Quelle variable d'environnement le front React (Vite) de PassQuiz peut-il lire ?",
+        "type": "single",
+        "points": 1,
+        "answers": [
+          {
+            "text": "`APP_KEY`",
+            "is_correct": false
+          },
+          {
+            "text": "`SANCTUM_SECRET`",
+            "is_correct": false
+          },
+          {
+            "text": "`DB_PASSWORD`",
+            "is_correct": false
+          },
+          {
+            "text": "`VITE_API_URL`",
+            "is_correct": true
+          }
+        ],
+        "explanation": "Seules les variables `VITE_` sont exposées au code, et elles sont publiques. Les secrets restent dans le `.env` de Laravel."
+      }
+    ]
+  }
+}

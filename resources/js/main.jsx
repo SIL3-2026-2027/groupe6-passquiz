@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AdminLayout, GuestLayout, HomeRedirect, LearnerLayout, RequireAuth } from './components/Layouts';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationsProvider } from './context/NotificationsContext';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -71,7 +72,7 @@ function App() {
                 <Route index element={<AdminDashboard />} />
                 <Route path="statistics" element={<AdminStatistics />} />
                 <Route path="users" element={<RequireAuth admin><AdminUsers /></RequireAuth>} />
-                <Route path="users/:id" element={<RequireAuth admin><AdminUserShow /></RequireAuth>} />
+                <Route path="users/:id" element={<AdminUserShow />} />
                 <Route path="formations" element={<AdminFormations />} />
                 <Route path="formations/:id" element={<AdminFormationShow />} />
                 <Route path="quizzes" element={<AdminQuizzes />} />
@@ -91,7 +92,9 @@ createRoot(document.getElementById('app')).render(
     <StrictMode>
         <BrowserRouter>
             <AuthProvider>
-                <App />
+                <NotificationsProvider>
+                    <App />
+                </NotificationsProvider>
             </AuthProvider>
         </BrowserRouter>
     </StrictMode>,
